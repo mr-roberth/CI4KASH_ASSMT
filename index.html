@@ -2,276 +2,48 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión Operativa | Evaluación de Madurez</title>
-  <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f0efe7;
-      color: #2c3e2f;
-      line-height: 1.5;
-    }
-
-    /* Contenedor principal */
-    .app-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
-
-    /* Header corporativo */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-      border-bottom: 2px solid #d4cdb2;
-      padding-bottom: 1rem;
-    }
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .logo-icon {
-      font-size: 2rem;
-      color: #2c5e2e;
-    }
-    .logo-text {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: #2c5e2e;
-    }
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: white;
-      padding: 0.5rem 1rem;
-      border-radius: 40px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .user-name {
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .btn-logout {
-      background: none;
-      border: none;
-      color: #b33;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: 0.2s;
-    }
-    .btn-logout:hover {
-      color: #800;
-    }
-
-    /* Tarjetas */
-    .card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-      padding: 1.8rem;
-      margin-bottom: 2rem;
-      transition: 0.2s;
-    }
-    .card-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      color: #2c5e2e;
-      border-left: 4px solid #d4b87a;
-      padding-left: 1rem;
-    }
-
-    /* Formularios */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.2rem;
-      margin-bottom: 1.5rem;
-    }
-    .form-group label {
-      font-weight: 600;
-      display: block;
-      margin-bottom: 0.4rem;
-      font-size: 0.85rem;
-      color: #5a5a4a;
-    }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 0.7rem 1rem;
-      border: 1px solid #ddd6c8;
-      border-radius: 12px;
-      font-family: inherit;
-      background: #fefcf7;
-      transition: 0.2s;
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: #2c5e2e;
-      box-shadow: 0 0 0 2px rgba(44,94,46,0.2);
-    }
-
-    /* Tablas estilo PDF */
-    .evaluation-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1rem 0;
-      font-size: 0.85rem;
-    }
-    .evaluation-table th {
-      background: #2c5e2e;
-      color: white;
-      padding: 10px 12px;
-      font-weight: 600;
-      text-align: center;
-      border: 1px solid #406d42;
-    }
-    .evaluation-table td {
-      border: 1px solid #e2dbc8;
-      padding: 10px 12px;
-      background: #fffcf5;
-      vertical-align: top;
-    }
-    .section-title {
-      background: #e9e2d4;
-      padding: 10px 15px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-top: 1.5rem;
-      border-radius: 10px;
-      color: #2c3e2f;
-    }
-    .sub-section {
-      background: #f4f0e6;
-      padding: 6px 12px;
-      font-weight: 600;
-      margin-top: 0.5rem;
-      border-left: 4px solid #d4b87a;
-    }
-    .radio-group {
-      display: flex;
-      gap: 1.5rem;
-      align-items: center;
-    }
-    .radio-group label {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      cursor: pointer;
-    }
-
-    /* Botones */
-    .btn {
-      background: #2c5e2e;
-      color: white;
-      border: none;
-      padding: 0.7rem 1.4rem;
-      border-radius: 40px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-      font-size: 0.9rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .btn:hover {
-      background: #1f4521;
-      transform: translateY(-1px);
-    }
-    .btn-secondary {
-      background: #6c757d;
-    }
-    .btn-secondary:hover {
-      background: #5a6268;
-    }
-    .btn-outline {
-      background: white;
-      border: 1px solid #2c5e2e;
-      color: #2c5e2e;
-    }
-    .btn-outline:hover {
-      background: #eef4ea;
-    }
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .alert {
-      padding: 0.8rem 1rem;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-    }
-    .alert-error {
-      background: #fbe9e7;
-      color: #c62828;
-      border-left: 4px solid #c62828;
-    }
-    .alert-success {
-      background: #e8f5e9;
-      color: #2e7d32;
-      border-left: 4px solid #2e7d32;
-    }
-    .hidden {
-      display: none;
-    }
-    .loading {
-      text-align: center;
-      padding: 2rem;
-      color: #7f8c8d;
-    }
-    table.data-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    table.data-table th, table.data-table td {
-      border: 1px solid #e2dbc8;
-      padding: 10px;
-      text-align: left;
-    }
-    table.data-table th {
-      background: #e9e2d4;
-      font-weight: 600;
-    }
-    .badge {
-      background: #2c5e2e20;
-      color: #2c5e2e;
-      padding: 4px 8px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    @media (max-width: 768px) {
-      .app-container { padding: 1rem; }
-      .card { padding: 1.2rem; }
-      .form-grid { grid-template-columns: 1fr; }
-      .evaluation-table { font-size: 0.75rem; }
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f0efe7; color: #2c3e2f; line-height: 1.5; }
+    .app-container { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; border-bottom: 2px solid #d4cdb2; padding-bottom: 1rem; }
+    .logo-area { display: flex; align-items: center; gap: 0.75rem; }
+    .logo-icon { font-size: 2rem; color: #2c5e2e; }
+    .logo-text { font-size: 1.5rem; font-weight: 700; color: #2c5e2e; }
+    .user-info { display: flex; align-items: center; gap: 1rem; background: white; padding: 0.5rem 1rem; border-radius: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .user-name { font-weight: 600; font-size: 0.9rem; }
+    .btn-logout { background: none; border: none; color: #b33; cursor: pointer; font-size: 1rem; }
+    .card { background: white; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); padding: 1.8rem; margin-bottom: 2rem; }
+    .card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: #2c5e2e; border-left: 4px solid #d4b87a; padding-left: 1rem; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem; }
+    .form-group label { font-weight: 600; display: block; margin-bottom: 0.4rem; font-size: 0.85rem; color: #5a5a4a; }
+    .form-group input, .form-group select { width: 100%; padding: 0.7rem 1rem; border: 1px solid #ddd6c8; border-radius: 12px; font-family: inherit; background: #fefcf7; }
+    .evaluation-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+    .evaluation-table th { background: #2c5e2e; color: white; padding: 10px 12px; font-weight: 600; text-align: center; border: 1px solid #406d42; }
+    .evaluation-table td { border: 1px solid #e2dbc8; padding: 10px 12px; background: #fffcf5; vertical-align: top; }
+    .section-title { background: #e9e2d4; padding: 10px 15px; font-weight: 700; font-size: 1.1rem; margin-top: 1.5rem; border-radius: 10px; color: #2c3e2f; }
+    .sub-section { background: #f4f0e6; padding: 6px 12px; font-weight: 600; margin-top: 0.5rem; border-left: 4px solid #d4b87a; }
+    .radio-group { display: flex; gap: 1.5rem; align-items: center; }
+    .btn { background: #2c5e2e; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-secondary { background: #6c757d; }
+    .btn-outline { background: white; border: 1px solid #2c5e2e; color: #2c5e2e; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .alert { padding: 0.8rem 1rem; border-radius: 12px; margin-bottom: 1rem; }
+    .alert-error { background: #fbe9e7; color: #c62828; border-left: 4px solid #c62828; }
+    .alert-success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
+    .hidden { display: none; }
+    table.data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    table.data-table th, table.data-table td { border: 1px solid #e2dbc8; padding: 10px; text-align: left; }
+    table.data-table th { background: #e9e2d4; font-weight: 600; }
+    @media (max-width: 768px) { .app-container { padding: 1rem; } .card { padding: 1.2rem; } .form-grid { grid-template-columns: 1fr; } .evaluation-table { font-size: 0.75rem; } }
   </style>
 </head>
 <body>
 <div class="app-container">
-  <!-- Header dinámico -->
   <div class="header">
     <div class="logo-area">
       <i class="fas fa-chart-line logo-icon"></i>
@@ -279,51 +51,32 @@
     </div>
     <div id="user-info" class="user-info hidden">
       <span class="user-name" id="user-name-display"></span>
-      <button id="logout-btn" class="btn-logout" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></button>
+      <button id="logout-btn" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </div>
 
-  <!-- VISTA LOGIN / REGISTRO -->
+  <!-- VISTA LOGIN -->
   <div id="login-view">
     <div class="card" style="max-width: 480px; margin: 2rem auto;">
       <div class="card-title">Acceso al sistema</div>
       <div id="login-error" class="alert alert-error hidden"></div>
-      <div class="form-group">
-        <label>Correo electrónico</label>
-        <input type="email" id="login-email" placeholder="usuario@empresa.com">
-      </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="login-password">
-      </div>
+      <div class="form-group"><label>Correo electrónico</label><input type="email" id="login-email"></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="login-password"></div>
       <button id="login-btn" class="btn" style="width: 100%; justify-content: center;">Ingresar</button>
-      <p style="margin-top: 1.5rem; text-align: center;">
-        ¿No tienes cuenta? <a href="#" id="show-register" style="color: #2c5e2e; font-weight: 600;">Regístrate aquí</a>
-      </p>
+      <p style="margin-top: 1.5rem; text-align: center;">¿No tienes cuenta? <a href="#" id="show-register" style="color: #2c5e2e;">Regístrate aquí</a></p>
     </div>
     <div class="card hidden" id="register-card" style="max-width: 480px; margin: 0 auto;">
       <div class="card-title">Registro de usuario</div>
       <div id="register-error" class="alert alert-error hidden"></div>
-      <div class="form-group">
-        <label>Nombre completo</label>
-        <input type="text" id="reg-name">
-      </div>
-      <div class="form-group">
-        <label>Correo electrónico</label>
-        <input type="email" id="reg-email">
-      </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="reg-password">
-      </div>
+      <div class="form-group"><label>Nombre completo</label><input type="text" id="reg-name"></div>
+      <div class="form-group"><label>Correo electrónico</label><input type="email" id="reg-email"></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="reg-password"></div>
       <button id="register-btn" class="btn" style="width: 100%; justify-content: center;">Registrarse</button>
-      <p style="margin-top: 1rem; text-align: center;">
-        <a href="#" id="show-login" style="color: #2c5e2e;">← Volver al inicio de sesión</a>
-      </p>
+      <p style="margin-top: 1rem; text-align: center;"><a href="#" id="show-login">← Volver al inicio de sesión</a></p>
     </div>
   </div>
 
-  <!-- VISTA PRINCIPAL (después de login) -->
+  <!-- VISTA PRINCIPAL -->
   <div id="main-view" class="hidden">
     <div class="flex-between" style="margin-bottom: 1.5rem;">
       <div>
@@ -350,18 +103,18 @@
       </div>
     </div>
 
-    <!-- Dashboard (lista de evaluaciones) -->
+    <!-- Dashboard -->
     <div id="dashboard-view" class="card hidden">
       <div class="card-title">Evaluaciones realizadas</div>
       <div class="flex-between" style="gap: 1rem; flex-wrap: wrap;">
-        <div style="flex:1; min-width: 180px;"><label>Filtrar empresa</label><input type="text" id="filter-empresa" placeholder="Nombre empresa" class="form-group" style="margin:0;"></div>
-        <div style="flex:1; min-width: 180px;"><label>Filtrar evaluador</label><input type="text" id="filter-evaluador" placeholder="Email evaluador" class="form-group" style="margin:0;"></div>
+        <div style="flex:1;"><label>Filtrar empresa</label><input type="text" id="filter-empresa" class="form-group" style="margin:0;"></div>
+        <div style="flex:1;"><label>Filtrar evaluador</label><input type="text" id="filter-evaluador" class="form-group" style="margin:0;"></div>
         <div style="align-self: flex-end;"><button id="apply-filters" class="btn">Aplicar filtros</button></div>
       </div>
       <div id="evaluaciones-list" style="overflow-x: auto;"></div>
     </div>
 
-    <!-- Detalle evaluación (estilo PDF) -->
+    <!-- Detalle evaluación -->
     <div id="detalle-view" class="card hidden">
       <div class="flex-between">
         <div class="card-title">Detalle de evaluación</div>
@@ -374,13 +127,13 @@
 
 <script>
   // ==================== CONFIGURACIÓN ====================
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxUQx-kn_eO1UJn8crzqLJWWDheR_gZpNiApbHrkpdTZPfshuZU29DICrF9YSKiMBbVjQ/exec";  // <-- CAMBIA ESTO por tu URL de Web App (terminada en /exec)
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxUQx-kn_eO1UJn8crzqLJWWDheR_gZpNiApbHrkpdTZPfshuZU29DICrF9YSKiMBbVjQ/exec";  // Reemplazar con URL real
 
   let currentUser = null;
   let preguntas = [];
-  let respuestasSeleccionadas = {}; // key: num, value: "Sí" / "No"
+  let respuestasSeleccionadas = {};
 
-  // Helper fetch con manejo de errores
+  // Helper fetch (adaptado al patrón de tu código funcional)
   async function callGAS(action, data = {}) {
     data.action = action;
     try {
@@ -391,11 +144,10 @@
         body: JSON.stringify(data)
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const json = await response.json();
-      return json;
+      return await response.json();
     } catch (error) {
       console.error("Fetch error:", error);
-      return { status: "error", message: "Error de conexión: " + error.message };
+      return { success: false, message: "Error de conexión: " + error.message };
     }
   }
 
@@ -412,7 +164,7 @@
     document.getElementById('login-view').classList.add('hidden');
     document.getElementById('main-view').classList.remove('hidden');
     document.getElementById('user-info').classList.remove('hidden');
-    document.getElementById('user-name-display').textContent = currentUser.nombre;
+    document.getElementById('user-name-display').textContent = currentUser.name;
     // Mostrar dashboard por defecto
     document.getElementById('new-evaluation-form').classList.add('hidden');
     document.getElementById('dashboard-view').classList.remove('hidden');
@@ -420,18 +172,18 @@
     loadDashboard();
   }
 
-  // Cargar preguntas desde el backend
+  // Cargar preguntas
   async function loadPreguntas() {
     const result = await callGAS('getPreguntas');
-    if (result.status === 'success') {
+    if (result.success) {
       preguntas = result.preguntas;
       renderPreguntasForm();
     } else {
-      alert("Error al cargar las preguntas: " + result.message);
+      alert("Error al cargar preguntas: " + result.message);
     }
   }
 
-  // Renderizar formulario de preguntas con agrupación por pilar/elemento
+  // Renderizar formulario de preguntas
   function renderPreguntasForm() {
     const container = document.getElementById('preguntas-container');
     const grouped = {};
@@ -445,9 +197,7 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<table class="evaluation-table">
-                  <thead><tr><th style="width:5%">No.</th><th style="width:70%">Criterio</th><th style="width:25%">Respuesta</th></tr></thead>
-                  <tbody>`;
+        html += `<table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
@@ -455,16 +205,16 @@
                     <td>${p.num}</td>
                     <td>${p.criterio}</td>
                     <td><div class="radio-group">
-                        <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
-                        <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
-                      </div></td>
-                  </tr>`;
+                      <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
+                      <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
+                    </div></td>
+                   </tr>`;
         });
         html += `</tbody></table>`;
       }
     }
     container.innerHTML = html;
-    // Asignar event listeners a los radios
+    // Event listeners para radios
     preguntas.forEach(p => {
       const radios = document.querySelectorAll(`input[name="q_${p.num}"]`);
       radios.forEach(radio => {
@@ -488,7 +238,6 @@
       return;
     }
 
-    // Construir array de respuestas
     const respuestas = preguntas.map(p => ({
       num: p.num,
       respuesta: respuestasSeleccionadas[p.num] || 'No'
@@ -497,8 +246,8 @@
     const result = await callGAS('submitEvaluacion', {
       empresa, fecha, evaluador, representante, asistentes, respuestas
     });
-    if (result.status === 'success') {
-      alert(`✅ Evaluación guardada correctamente. Total: ${result.total} / 80 puntos.`);
+    if (result.success) {
+      alert(`✅ Evaluación guardada. Total: ${result.total} / 80 puntos.`);
       resetForm();
       document.getElementById('new-evaluation-form').classList.add('hidden');
       document.getElementById('dashboard-view').classList.remove('hidden');
@@ -526,18 +275,16 @@
 
   // Cargar dashboard
   async function loadDashboard() {
-    const filterEmpresa = document.getElementById('filter-empresa').value;
-    const filterEvaluador = document.getElementById('filter-evaluador').value;
-    const result = await callGAS('getEvaluaciones', { filtroEmpresa: filterEmpresa, filtroEvaluador: filterEvaluador });
-    if (result.status === 'success') {
+    const filtroEmpresa = document.getElementById('filter-empresa').value;
+    const filtroEvaluador = document.getElementById('filter-evaluador').value;
+    const result = await callGAS('getEvaluaciones', { filtroEmpresa, filtroEvaluador });
+    if (result.success) {
       const container = document.getElementById('evaluaciones-list');
       if (!result.evaluaciones.length) {
         container.innerHTML = '<div class="alert">No hay evaluaciones registradas.</div>';
         return;
       }
-      let html = `<table class="data-table">
-                    <thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Total puntos</th><th></th></tr></thead>
-                    <tbody>`;
+      let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Total puntos</th><th></th></tr></thead><tbody>`;
       result.evaluaciones.forEach(evalItem => {
         html += `<tr>
                   <td>${escapeHtml(evalItem.empresa || '')}</td>
@@ -545,12 +292,12 @@
                   <td>${escapeHtml(evalItem.evaluador || '')}</td>
                   <td>${evalItem.total_puntos || 0} / 80</td>
                   <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${evalItem.id}')">Ver detalle</button></td>
-                </tr>`;
+                 </tr>`;
       });
       html += `</tbody></table>`;
       container.innerHTML = html;
     } else {
-      container.innerHTML = '<div class="alert alert-error">Error al cargar evaluaciones: ' + result.message + '</div>';
+      container.innerHTML = `<div class="alert alert-error">Error: ${result.message}</div>`;
     }
   }
 
@@ -566,11 +313,12 @@
 
   window.verDetalle = async function(id) {
     const result = await callGAS('getEvaluacionDetalle', { id });
-    if (result.status === 'success') {
+    if (result.success) {
       const evaluacion = result.evaluacion;
       const respuestas = result.respuestas;
       const respMap = {};
       respuestas.forEach(r => respMap[r.num] = r.respuesta);
+
       // Agrupar preguntas para mostrar como PDF
       const grouped = {};
       preguntas.forEach(p => {
@@ -606,12 +354,12 @@
 
   // ==================== EVENTOS ====================
   document.getElementById('login-btn').onclick = async () => {
-    const email = document.getElementById('login-email').value;
+    const username = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    const result = await callGAS('login', { email, password });
-    if (result.status === 'success') {
+    const result = await callGAS('login', { username, password });
+    if (result.success) {
       currentUser = result.user;
-      await loadPreguntas();    // carga preguntas antes de mostrar main
+      await loadPreguntas();  // Cargar preguntas antes de mostrar main
       showMain();
     } else {
       const errorDiv = document.getElementById('login-error');
@@ -629,16 +377,16 @@
     document.getElementById('register-card').classList.add('hidden');
   };
   document.getElementById('register-btn').onclick = async () => {
-    const nombre = document.getElementById('reg-name').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
+    const name = document.getElementById('reg-name').value.trim();
+    const username = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-password').value;
-    if (!nombre || !email || !password) {
+    if (!name || !username || !password) {
       document.getElementById('register-error').textContent = "Todos los campos son obligatorios";
       document.getElementById('register-error').classList.remove('hidden');
       return;
     }
-    const result = await callGAS('register', { nombre, email, password });
-    if (result.status === 'success') {
+    const result = await callGAS('register', { name, username, password });
+    if (result.success) {
       alert("Registro exitoso. Ahora puedes iniciar sesión.");
       document.getElementById('register-card').classList.add('hidden');
     } else {
@@ -646,14 +394,12 @@
       document.getElementById('register-error').classList.remove('hidden');
     }
   };
-  document.getElementById('logout-btn').onclick = () => {
-    showLogin();
-  };
+  document.getElementById('logout-btn').onclick = () => showLogin();
   document.getElementById('new-evaluation-btn').onclick = () => {
     document.getElementById('new-evaluation-form').classList.remove('hidden');
     document.getElementById('dashboard-view').classList.add('hidden');
     document.getElementById('detalle-view').classList.add('hidden');
-    document.getElementById('evaluador').value = currentUser.email;
+    document.getElementById('evaluador').value = currentUser.username;
     document.getElementById('fecha-evaluacion').valueAsDate = new Date();
     respuestasSeleccionadas = {};
     renderPreguntasForm();
@@ -675,6 +421,9 @@
     document.getElementById('new-evaluation-form').classList.add('hidden');
     document.getElementById('dashboard-view').classList.remove('hidden');
   };
+
+  // Inicializar vista
+  showLogin();
 </script>
 </body>
 </html>
