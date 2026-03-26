@@ -130,6 +130,21 @@
     .sub-section {
       background: #f8fafc; padding: 8px 16px; font-weight: 600; margin-top: 0.5rem;
       border-left: 4px solid var(--secondary); color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .sub-section:hover {
+      background: #e2e8f0;
+    }
+    .sub-section i {
+      margin-right: 8px;
+      transition: transform 0.2s;
+    }
+    .sub-section.collapsed i {
+      transform: rotate(-90deg);
+    }
+    .question-group {
+      margin-bottom: 0.5rem;
     }
     .radio-group {
       display: flex; gap: 1.5rem; align-items: center; justify-content: center;
@@ -212,11 +227,47 @@
     }
     .detail-row.show { display: table-row; }
     .detail-row td { padding: 1rem; background: #f8fafc; }
-    /* Detalle de preguntas en dashboard */
+    /* Detalle de preguntas en dashboard (acordeón) */
     .question-detail {
       margin-top: 2rem;
       border-top: 2px solid var(--border);
       padding-top: 1.5rem;
+    }
+    .element-group {
+      margin-bottom: 1rem;
+    }
+    .element-header {
+      background: #f8fafc;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 3px solid var(--secondary);
+    }
+    .element-header i {
+      transition: transform 0.2s;
+    }
+    .element-header.collapsed i {
+      transform: rotate(-90deg);
+    }
+    .element-questions {
+      padding-left: 2rem;
+      margin-top: 0.5rem;
+      display: block;
+    }
+    .element-questions.collapsed {
+      display: none;
+    }
+    .answer-yes {
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+    .answer-no {
+      color: #f97316;
+      font-weight: 600;
     }
     /* Estilos de impresión */
     @media print {
@@ -352,7 +403,7 @@
               <div class="kpi-card"><div class="kpi-label">Resultado Mejora de Procesos</div><div class="kpi-value" id="kpi-mejora">--</div></div>
             </div>
             <div class="chart-container"><h3>Cumplimiento por Elemento</h3><div class="chart-wrapper"><canvas id="radarChart"></canvas></div></div>
-            <div class="chart-container"><h3>Cumplimiento por Categoría (Sí/No)</h3><div class="chart-wrapper"><canvas id="stackedBarChart"></canvas></div></div>
+            <div class="chart-container"><h3>Cumplimiento por Elemento (Sí/No)</h3><div class="chart-wrapper"><canvas id="horizontalBarChart"></canvas></div></div>
           </div>
           <div class="question-detail" id="question-detail">
             <h3 style="margin-bottom: 1rem; color: var(--primary);">Detalle de preguntas</h3>
@@ -373,7 +424,7 @@
   let respuestasSeleccionadas = {};
   let todasEvaluaciones = [];       // almacenamos en memoria
   let radarChart = null;
-  let stackedBarChart = null;
+  let horizontalBarChart = null;
 
   // Cache de preguntas en localStorage (duran 1 día)
   const PREGUNTAS_CACHE_KEY = "gestion_operativa_preguntas";
@@ -416,8 +467,21 @@
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
 
-    if (tabId === 'evaluaciones') cargarEvaluaciones();
-    else if (tabId === 'dashboard') cargarDashboard();
+    if (tabId === 'nueva') {
+      // Llenar campo evaluador y fecha
+      const evaluadorField = document.getElementById('evaluador');
+      if (evaluadorField && currentUser) {
+        evaluadorField.value = currentUser.name;
+      }
+      const fechaField = document.getElementById('fecha-evaluacion');
+      if (fechaField && !fechaField.value) {
+        fechaField.valueAsDate = new Date();
+      }
+    } else if (tabId === 'evaluaciones') {
+      cargarEvaluaciones();
+    } else if (tabId === 'dashboard') {
+      cargarDashboard();
+    }
   }
 
   // ========== PREGUNTAS (con cache) ==========
@@ -467,13 +531,13 @@
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
           html += `合乎
-                       <td>${p.num}</td>
-                       <td>${p.criterio}</td>
-                       <td><div class="radio-group">
+                        <td>${p.num}</td>
+                        <td>${p.criterio}</td>
+                        <td><div class="radio-group">
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                     </tr>`;
+                       </tr>`;
         });
         html += `</tbody></table>`;
       }
@@ -582,9 +646,9 @@
       container.innerHTML = '<div class="alert">Cargando preguntas...</div>';
       return;
     }
-    let html = `<table class="data-table" style="width:100%"><thead><tr>
+    let html = `<table class="data-table" style="width:100%"><thead>
                   <th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th>
-                 </tr></thead><tbody>`;
+                  </thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
@@ -635,7 +699,12 @@
           html += `<div class="sub-section">${elemento}</div><table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
           grouped[pilar][elemento].forEach(p => {
             const resp = respMap[p.num] === 'Sí' ? '✓ Sí' : '✗ No';
-            html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td>${resp}</td></tr>`;
+            const respClass = respMap[p.num] === 'Sí' ? 'answer-yes' : 'answer-no';
+            html += `<tr>
+                        <td>${p.num}</td>
+                        <td>${p.criterio}</td>
+                        <td class="${respClass}">${resp}</td>
+                      </tr>`;
           });
           html += `</tbody></table>`;
         }
@@ -722,47 +791,29 @@
       options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: (val) => val + '%' } } } }
     });
 
-    // Gráfico de barras apiladas: muestra Pilares y sus Elementos (jerárquico)
-    const categorias = [];
-    const siData = [];
-    const noData = [];
-    // Primero los pilares
-    for (const pilar of Object.keys(porPilar)) {
-      categorias.push(pilar);
-      siData.push(porPilar[pilar].cumplidas);
-      noData.push(porPilar[pilar].total - porPilar[pilar].cumplidas);
-    }
-    // Luego los elementos, con indentación y agrupados por pilar
-    // Para cada pilar, agregamos sus elementos con sangría
-    for (const pilar of Object.keys(porPilar)) {
-      const elementosDelPilar = preguntas.filter(p => p.pilar === pilar).map(p => p.elemento);
-      const uniqueElementos = [...new Set(elementosDelPilar)];
-      for (const elem of uniqueElementos) {
-        if (porElemento[elem]) {
-          categorias.push(`  └ ${elem}`);
-          siData.push(porElemento[elem].cumplidas);
-          noData.push(porElemento[elem].total - porElemento[elem].cumplidas);
-        }
-      }
-    }
+    // Gráfico de barras horizontales apiladas (solo elementos)
+    const elementosOrdenados = Object.keys(porElemento);
+    const siCounts = elementosOrdenados.map(e => porElemento[e].cumplidas);
+    const noCounts = elementosOrdenados.map(e => porElemento[e].total - porElemento[e].cumplidas);
 
-    if (stackedBarChart) stackedBarChart.destroy();
-    const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
-    stackedBarChart = new Chart(ctxBar, {
+    if (horizontalBarChart) horizontalBarChart.destroy();
+    const ctxBar = document.getElementById('horizontalBarChart').getContext('2d');
+    horizontalBarChart = new Chart(ctxBar, {
       type: 'bar',
       data: {
-        labels: categorias,
+        labels: elementosOrdenados,
         datasets: [
-          { label: 'Sí', data: siData, backgroundColor: '#1e3a8a', borderRadius: 4 },
-          { label: 'No', data: noData, backgroundColor: '#f97316', borderRadius: 4 }
+          { label: 'Sí', data: siCounts, backgroundColor: '#1e3a8a', borderRadius: 4 },
+          { label: 'No', data: noCounts, backgroundColor: '#f97316', borderRadius: 4 }
         ]
       },
       options: {
+        indexAxis: 'y', // horizontal
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          x: { stacked: true, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } },
-          y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Cantidad de respuestas' } }
+          x: { stacked: true, title: { display: true, text: 'Cantidad de respuestas' } },
+          y: { stacked: true }
         },
         plugins: {
           tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}` } },
@@ -771,7 +822,7 @@
       }
     });
 
-    // Generar detalle de preguntas (agrupado por pilar y elemento)
+    // Generar detalle de preguntas (acordeón por elemento)
     generarDetallePreguntas(respMap);
   }
 
@@ -779,35 +830,53 @@
     const container = document.getElementById('question-detail-content');
     const grouped = {};
     preguntas.forEach(p => {
-      if (!grouped[p.pilar]) grouped[p.pilar] = {};
-      if (!grouped[p.pilar][p.elemento]) grouped[p.pilar][p.elemento] = [];
-      grouped[p.pilar][p.elemento].push(p);
+      if (!grouped[p.elemento]) grouped[p.elemento] = [];
+      grouped[p.elemento].push(p);
     });
+
     let html = '';
-    for (const pilar in grouped) {
-      html += `<div class="section-title">${pilar}</div>`;
-      for (const elemento in grouped[pilar]) {
-        html += `<div class="sub-section">${elemento}</div><table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
-        grouped[pilar][elemento].forEach(p => {
-          const resp = respMap[p.num] === 'Sí' ? '✓ Sí' : '✗ No';
-          html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td>${resp}</td></tr>`;
-        });
-        html += `</tbody></table>`;
-      }
+    for (const elemento in grouped) {
+      html += `<div class="element-group">
+                <div class="element-header" onclick="toggleElement(this)">
+                  <i class="fas fa-chevron-down"></i> ${elemento}
+                </div>
+                <div class="element-questions">`;
+      grouped[elemento].forEach(p => {
+        const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
+        const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
+        html += `<div style="margin-bottom: 0.5rem; padding-left: 1rem;">
+                  <strong>${p.num}.</strong> ${p.criterio}<br>
+                  <span class="${respClass}">Respuesta: ${resp}</span>
+                </div>`;
+      });
+      html += `</div></div>`;
     }
     container.innerHTML = html;
   }
+
+  window.toggleElement = function(header) {
+    const content = header.nextElementSibling;
+    const icon = header.querySelector('i');
+    content.classList.toggle('collapsed');
+    icon.classList.toggle('fa-chevron-down');
+    icon.classList.toggle('fa-chevron-right');
+    if (content.classList.contains('collapsed')) {
+      header.classList.add('collapsed');
+    } else {
+      header.classList.remove('collapsed');
+    }
+  };
 
   function mostrarDashboardVacio() {
     document.getElementById('kpi-general').innerText = '0%';
     document.getElementById('kpi-estabilidad').innerText = '0%';
     document.getElementById('kpi-mejora').innerText = '0%';
     if (radarChart) radarChart.destroy();
-    if (stackedBarChart) stackedBarChart.destroy();
+    if (horizontalBarChart) horizontalBarChart.destroy();
     const ctxRadar = document.getElementById('radarChart').getContext('2d');
     radarChart = new Chart(ctxRadar, { type: 'radar', data: { labels: [], datasets: [] }, options: { responsive: true } });
-    const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
-    stackedBarChart = new Chart(ctxBar, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true } });
+    const ctxBar = document.getElementById('horizontalBarChart').getContext('2d');
+    horizontalBarChart = new Chart(ctxBar, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true } });
     document.getElementById('question-detail-content').innerHTML = 'Seleccione una evaluación para ver el detalle.';
   }
 
@@ -860,12 +929,6 @@
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => activarPestana(btn.getAttribute('data-tab')));
-  });
-
-  // Inicializar campo evaluador cuando se crea nueva evaluación
-  document.getElementById('new-evaluation-btn')?.addEventListener('click', () => {
-    document.getElementById('evaluador').value = currentUser.name;
-    document.getElementById('fecha-evaluacion').valueAsDate = new Date();
   });
 
   showLogin();
