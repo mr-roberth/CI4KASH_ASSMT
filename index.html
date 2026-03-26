@@ -9,11 +9,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* ========== NUEVA PALETA DE COLORES ========== */
+    /* ========== PALETA DE COLORES ========== */
     :root {
-      --primary-dark: #0f2b5e;    /* azul oscuro */
-      --primary: #1e3a8a;         /* azul medio */
-      --secondary: #f97316;        /* naranja */
+      --primary-dark: #0f2b5e;
+      --primary: #1e3a8a;
+      --secondary: #f97316;
       --secondary-light: #ffedd5;
       --light-bg: #f9fafb;
       --border: #e2e8f0;
@@ -37,7 +37,6 @@
       margin: 0 auto;
       padding: 2rem 1.5rem;
     }
-    /* Header con colores azul y naranja */
     .header {
       background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
       border-radius: 1rem 1rem 0 0;
@@ -91,7 +90,6 @@
     .btn-logout:hover {
       opacity: 1;
     }
-    /* Navegación (pestañas) */
     .tabs {
       display: flex;
       gap: 0.5rem;
@@ -119,7 +117,6 @@
       background: #f1f5f9;
       color: var(--primary);
     }
-    /* Tarjetas y formularios */
     .card {
       background: white;
       border-radius: 1rem;
@@ -279,7 +276,6 @@
       flex: 1;
       min-width: 150px;
     }
-    /* Dashboard específico */
     .dashboard-layout {
       display: flex;
       flex-wrap: wrap;
@@ -330,6 +326,20 @@
       margin-bottom: 1.5rem;
       text-align: right;
     }
+    .loader {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid var(--secondary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
     @media (max-width: 768px) {
       .app-container { padding: 1rem; }
       .header { margin: -1rem -1rem 1rem -1rem; padding: 1rem; }
@@ -343,7 +353,6 @@
 </head>
 <body>
 <div class="app-container">
-  <!-- Header con logo -->
   <div class="header">
     <div class="logo-area">
       <img src="logo.png" alt="Logo" id="logo-img" onerror="this.style.display='none'; this.nextSibling.style.display='inline'">
@@ -378,15 +387,14 @@
 
   <!-- VISTA PRINCIPAL -->
   <div id="main-view" class="hidden">
-    <!-- Pestañas de navegación -->
+    <!-- Pestañas -->
     <div class="tabs">
       <button class="tab-btn" data-tab="nueva">Nueva evaluación</button>
       <button class="tab-btn" data-tab="evaluaciones">Evaluaciones</button>
       <button class="tab-btn" data-tab="dashboard">Dashboard</button>
     </div>
 
-    <!-- CONTENIDO DE CADA PESTAÑA -->
-    <!-- Pestaña: Nueva evaluación -->
+    <!-- Contenido de cada pestaña -->
     <div id="tab-nueva" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Registro de evaluación</div>
@@ -406,39 +414,32 @@
       </div>
     </div>
 
-    <!-- Pestaña: Evaluaciones (lista con filtros y detalle) -->
     <div id="tab-evaluaciones" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Evaluaciones realizadas</div>
         <div class="filter-bar">
           <div class="form-group">
             <label>Filtrar por empresa</label>
-            <select id="filter-empresa-evaluaciones">
-              <option value="">Todas las empresas</option>
-            </select>
+            <select id="filter-empresa-evaluaciones"><option value="">Todas las empresas</option></select>
           </div>
           <div class="form-group">
             <label>Filtrar por evaluador</label>
-            <select id="filter-evaluador-evaluaciones">
-              <option value="">Todos los evaluadores</option>
-            </select>
+            <select id="filter-evaluador-evaluaciones"><option value="">Todos los evaluadores</option></select>
           </div>
           <button id="apply-filters-evaluaciones" class="btn">Aplicar filtros</button>
           <button id="reset-filters-evaluaciones" class="btn btn-secondary">Mostrar todas</button>
         </div>
         <div id="evaluaciones-list" style="overflow-x: auto;"></div>
       </div>
-      <!-- Detalle de evaluación (aparece dentro de la misma pestaña) -->
       <div id="detalle-evaluacion" class="card hidden">
         <div class="flex-between">
           <div class="card-title">Detalle de evaluación</div>
-          <button id="back-to-list" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver a la lista</button>
+          <button id="back-to-list" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver</button>
         </div>
         <div id="detalle-content"></div>
       </div>
     </div>
 
-    <!-- Pestaña: Dashboard (nuevo diseño) -->
     <div id="tab-dashboard" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Dashboard de resultados</div>
@@ -448,38 +449,15 @@
             <select id="dashboard-eval-select"></select>
           </div>
         </div>
-
         <div class="dashboard-layout">
-          <!-- Columna izquierda: KPIs -->
           <div class="kpi-panel">
-            <div class="kpi-card">
-              <div class="kpi-label">Resultado General</div>
-              <div class="kpi-value" id="kpi-general">0%</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">Resultado Estabilidad</div>
-              <div class="kpi-value" id="kpi-estabilidad">0%</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">Resultado Mejora de Procesos</div>
-              <div class="kpi-value" id="kpi-mejora">0%</div>
-            </div>
+            <div class="kpi-card"><div class="kpi-label">Resultado General</div><div class="kpi-value" id="kpi-general">--</div></div>
+            <div class="kpi-card"><div class="kpi-label">Resultado Estabilidad</div><div class="kpi-value" id="kpi-estabilidad">--</div></div>
+            <div class="kpi-card"><div class="kpi-label">Resultado Mejora de Procesos</div><div class="kpi-value" id="kpi-mejora">--</div></div>
           </div>
-
-          <!-- Columna derecha: gráficos -->
           <div class="charts-panel">
-            <div class="chart-container">
-              <h3 style="margin-bottom: 1rem; color: var(--primary);">Cumplimiento por Elemento</h3>
-              <div class="chart-wrapper">
-                <canvas id="radarChart"></canvas>
-              </div>
-            </div>
-            <div class="chart-container">
-              <h3 style="margin-bottom: 1rem; color: var(--primary);">Cumplimiento por Pilar (Sí/No)</h3>
-              <div class="chart-wrapper">
-                <canvas id="stackedBarChart"></canvas>
-              </div>
-            </div>
+            <div class="chart-container"><h3>Cumplimiento por Elemento</h3><div class="chart-wrapper"><canvas id="radarChart"></canvas></div></div>
+            <div class="chart-container"><h3>Cumplimiento por Pilar (Sí/No)</h3><div class="chart-wrapper"><canvas id="stackedBarChart"></canvas></div></div>
           </div>
         </div>
       </div>
@@ -489,23 +467,20 @@
 
 <script>
   // ==================== CONFIGURACIÓN ====================
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxICilStWld6uZjecBT3cLmM176XEdVyz5QJQs52h0PYN6Ar_V89Gtla78dsQDuvu1bg/exec"; // ← REEMPLAZAR CON TU URL
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxICilStWld6uZjecBT3cLmM176XEdVyz5QJQs52h0PYN6Ar_V89Gtla78dsQDuvu1bg/exec"; // ← REEMPLAZAR
 
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
   let todasEvaluaciones = [];
-  let todasRespuestas = {}; // cache de detalles
-  let radarChart, stackedBarChart;
+  let radarChart = null;
+  let stackedBarChart = null;
 
   // ========== FUNCIÓN FETCH SIMPLIFICADA ==========
   async function callGAS(action, data = {}) {
     data.action = action;
     try {
-      const response = await fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
+      const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(data) });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } catch (error) {
@@ -528,8 +503,7 @@
     document.getElementById('main-view').classList.remove('hidden');
     document.getElementById('user-info').classList.remove('hidden');
     document.getElementById('user-name-display').textContent = currentUser.name;
-    // Mostrar pestaña por defecto: Nueva evaluación
-    activarPestana('nueva');
+    activarPestana('nueva'); // Mostrar primera pestaña
   }
 
   // Control de pestañas
@@ -539,11 +513,8 @@
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
 
-    if (tabId === 'evaluaciones') {
-      cargarEvaluaciones();
-    } else if (tabId === 'dashboard') {
-      cargarDashboard();
-    }
+    if (tabId === 'evaluaciones') cargarEvaluaciones();
+    else if (tabId === 'dashboard') cargarDashboard();
   }
 
   // ========== PREGUNTAS ==========
@@ -552,8 +523,10 @@
     if (result.success) {
       preguntas = result.preguntas;
       renderPreguntasForm();
+      return true;
     } else {
       alert("Error al cargar preguntas: " + result.message);
+      return false;
     }
   }
 
@@ -570,18 +543,18 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<table class="evaluation-table"><thead> tr<th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
+        html += `<table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
-          html += `合乎
-                        <td>${p.num}</td>
-                        <td>${p.criterio}</td>
-                        <td><div class="radio-group">
-                          <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
-                          <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
-                        </div></td>
-                       </tr>`;
+          html += `<tr>
+                      <td>${p.num}</td>
+                      <td>${p.criterio}</td>
+                      <td><div class="radio-group">
+                        <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
+                        <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
+                      </div></td>
+                    </tr>`;
         });
         html += `</tbody></table>`;
       }
@@ -614,14 +587,8 @@
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
-    const respuestas = preguntas.map(p => ({
-      num: p.num,
-      respuesta: respuestasSeleccionadas[p.num] || 'No'
-    }));
-
-    const result = await callGAS('submitEvaluacion', {
-      empresa, fecha, evaluador, representante, asistentes, respuestas
-    });
+    const respuestas = preguntas.map(p => ({ num: p.num, respuesta: respuestasSeleccionadas[p.num] || 'No' }));
+    const result = await callGAS('submitEvaluacion', { empresa, fecha, evaluador, representante, asistentes, respuestas });
 
     if (result.success) {
       const porcentaje = Math.round((result.total / preguntas.length) * 100);
@@ -651,15 +618,17 @@
     renderPreguntasForm();
   }
 
-  // ========== EVALUACIONES (LISTA CON DETALLE) ==========
+  // ========== EVALUACIONES (LISTA) ==========
   async function cargarEvaluaciones() {
+    const container = document.getElementById('evaluaciones-list');
+    container.innerHTML = '<div class="loader"></div> Cargando evaluaciones...';
     const result = await callGAS('getEvaluaciones');
     if (result.success) {
       todasEvaluaciones = result.evaluaciones;
       poblarFiltrosEvaluaciones(todasEvaluaciones);
       aplicarFiltrosEvaluaciones();
     } else {
-      document.getElementById('evaluaciones-list').innerHTML = `<div class="alert alert-error">Error: ${result.message}</div>`;
+      container.innerHTML = `<div class="alert alert-error">Error: ${result.message}</div>`;
     }
   }
 
@@ -671,20 +640,14 @@
     const evaluadorSelect = document.getElementById('filter-evaluador-evaluaciones');
 
     empresaSelect.innerHTML = '<option value="">Todas las empresas</option>';
-    empresas.forEach(emp => {
-      empresaSelect.innerHTML += `<option value="${escapeHtml(emp)}">${escapeHtml(emp)}</option>`;
-    });
-
+    empresas.forEach(emp => empresaSelect.innerHTML += `<option value="${escapeHtml(emp)}">${escapeHtml(emp)}</option>`);
     evaluadorSelect.innerHTML = '<option value="">Todos los evaluadores</option>';
-    evaluadores.forEach(evalName => {
-      evaluadorSelect.innerHTML += `<option value="${escapeHtml(evalName)}">${escapeHtml(evalName)}</option>`;
-    });
+    evaluadores.forEach(evalName => evaluadorSelect.innerHTML += `<option value="${escapeHtml(evalName)}">${escapeHtml(evalName)}</option>`);
   }
 
   function aplicarFiltrosEvaluaciones() {
     const empresaFiltro = document.getElementById('filter-empresa-evaluaciones').value;
     const evaluadorFiltro = document.getElementById('filter-evaluador-evaluaciones').value;
-
     let filtradas = [...todasEvaluaciones];
     if (empresaFiltro) filtradas = filtradas.filter(e => e.empresa === empresaFiltro);
     if (evaluadorFiltro) filtradas = filtradas.filter(e => e.evaluador === evaluadorFiltro);
@@ -698,30 +661,26 @@
       container.innerHTML = '<div class="alert">No hay evaluaciones con los filtros seleccionados.</div>';
       return;
     }
-
-    let html = `<table class="data-table"><thead>
-                  <th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th>
-                 </thead><tbody>`;
+    let html = `<table class="data-table"><thead><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th></thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
       html += `<tr>
-                  <td>${escapeHtml(e.empresa || '')}</td>
-                  <td>${e.fecha_evaluacion || ''}</td>
-                  <td>${escapeHtml(e.evaluador || '')}</td>
-                  <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
-                  <td><button class="btn btn-outline btn-sm" onclick="verDetalleEvaluacion('${e.id}')">Ver detalle</button></td>
-                </tr>`;
+                <td>${escapeHtml(e.empresa || '')}</td>
+                <td>${e.fecha_evaluacion || ''}</td>
+                <td>${escapeHtml(e.evaluador || '')}</td>
+                <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                <td><button class="btn btn-outline btn-sm" onclick="verDetalleEvaluacion('${e.id}')">Ver detalle</button></td>
+              </tr>`;
     });
     html += `</tbody></table>`;
     container.innerHTML = html;
   }
 
   window.verDetalleEvaluacion = async function(id) {
-    // Ocultar lista y mostrar detalle
     document.getElementById('evaluaciones-list').classList.add('hidden');
-    document.getElementById('detalle-evaluacion').classList.remove('hidden');
     document.querySelector('.filter-bar').classList.add('hidden');
+    document.getElementById('detalle-evaluacion').classList.remove('hidden');
 
     const result = await callGAS('getEvaluacionDetalle', { id });
     if (result.success) {
@@ -729,14 +688,13 @@
       const respuestas = result.respuestas;
       const respMap = {};
       respuestas.forEach(r => respMap[r.num] = r.respuesta);
-
       const grouped = {};
       preguntas.forEach(p => {
         if (!grouped[p.pilar]) grouped[p.pilar] = {};
         if (!grouped[p.pilar][p.elemento]) grouped[p.pilar][p.elemento] = [];
         grouped[p.pilar][p.elemento].push(p);
       });
-      let html = `<div style="margin-bottom:1rem;"><strong>Empresa:</strong> ${evaluacion.empresa}<br>
+      let html = `<div><strong>Empresa:</strong> ${evaluacion.empresa}<br>
                   <strong>Fecha:</strong> ${evaluacion.fecha_evaluacion}<br>
                   <strong>Evaluador:</strong> ${evaluacion.evaluador}<br>
                   <strong>Representante:</strong> ${evaluacion.representante}<br>
@@ -745,8 +703,7 @@
       for (const pilar in grouped) {
         html += `<div class="section-title">${pilar}</div>`;
         for (const elemento in grouped[pilar]) {
-          html += `<div class="sub-section">${elemento}</div>`;
-          html += `<table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
+          html += `<div class="sub-section">${elemento}</div><table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
           grouped[pilar][elemento].forEach(p => {
             const resp = respMap[p.num] === 'Sí' ? '✓ Sí' : '✗ No';
             html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td>${resp}</td></tr>`;
@@ -762,28 +719,24 @@
 
   document.getElementById('back-to-list').onclick = () => {
     document.getElementById('evaluaciones-list').classList.remove('hidden');
-    document.getElementById('detalle-evaluacion').classList.add('hidden');
     document.querySelector('.filter-bar').classList.remove('hidden');
+    document.getElementById('detalle-evaluacion').classList.add('hidden');
   };
 
   // ========== DASHBOARD ==========
   async function cargarDashboard() {
-    // Obtener todas las evaluaciones para poblar el selector
+    const select = document.getElementById('dashboard-eval-select');
+    select.innerHTML = '<option value="">Cargando evaluaciones...</option>';
     const result = await callGAS('getEvaluaciones');
     if (!result.success) {
-      alert("Error al cargar datos para dashboard");
+      select.innerHTML = '<option value="">Error al cargar evaluaciones</option>';
       return;
     }
     todasEvaluaciones = result.evaluaciones;
-    const select = document.getElementById('dashboard-eval-select');
     select.innerHTML = '<option value="">-- Selecciona una evaluación --</option>';
-    todasEvaluaciones.forEach(evalItem => {
-      const fecha = evalItem.fecha_evaluacion || '';
-      const empresa = evalItem.empresa || '';
-      select.innerHTML += `<option value="${evalItem.id}">${empresa} - ${fecha} (${evalItem.evaluador})</option>`;
+    todasEvaluaciones.forEach(e => {
+      select.innerHTML += `<option value="${e.id}">${e.empresa} - ${e.fecha_evaluacion} (${e.evaluador})</option>`;
     });
-
-    // Si hay al menos una evaluación, seleccionar la más reciente por defecto
     if (todasEvaluaciones.length) {
       const masReciente = todasEvaluaciones.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
       select.value = masReciente.id;
@@ -791,22 +744,12 @@
     } else {
       mostrarDashboardVacio();
     }
-
-    select.onchange = () => {
-      if (select.value) {
-        cargarDashboardParaEvaluacion(select.value);
-      } else {
-        mostrarDashboardVacio();
-      }
-    };
+    select.onchange = () => { if (select.value) cargarDashboardParaEvaluacion(select.value); else mostrarDashboardVacio(); };
   }
 
   async function cargarDashboardParaEvaluacion(evalId) {
     const detalle = await callGAS('getEvaluacionDetalle', { id: evalId });
-    if (!detalle.success) {
-      alert("Error al cargar detalle de evaluación");
-      return;
-    }
+    if (!detalle.success) { alert("Error al cargar detalle"); return; }
     const respuestas = detalle.respuestas;
     const respMap = {};
     respuestas.forEach(r => respMap[r.num] = r.respuesta);
@@ -816,21 +759,17 @@
     const porcentajeGeneral = Math.round((totalSi / totalPreguntas) * 100);
     document.getElementById('kpi-general').innerText = `${porcentajeGeneral}%`;
 
-    // Agrupar por elemento y pilar
-    const porElemento = {};
-    const porPilar = {};
+    const porElemento = {}, porPilar = {};
     preguntas.forEach(p => {
       const respuesta = respMap[p.num] === 'Sí';
       if (!porElemento[p.elemento]) porElemento[p.elemento] = { total: 0, cumplidas: 0 };
       porElemento[p.elemento].total++;
       if (respuesta) porElemento[p.elemento].cumplidas++;
-
       if (!porPilar[p.pilar]) porPilar[p.pilar] = { total: 0, cumplidas: 0 };
       porPilar[p.pilar].total++;
       if (respuesta) porPilar[p.pilar].cumplidas++;
     });
 
-    // Calcular KPIs de Estabilidad y Mejora de procesos
     const grupos = {
       Estabilidad: ['Estructura de equipos', 'Trabajo estandarizado', '5S'],
       MejoraProcesos: ['Indicadores', 'Solución de problemas', 'Mejora continua', 'Gestión visual', 'Escalonamiento e interacciones']
@@ -838,92 +777,33 @@
     let estabilidadTotal = 0, estabilidadCumple = 0;
     let mejoraTotal = 0, mejoraCumple = 0;
     for (const [elemento, stats] of Object.entries(porElemento)) {
-      if (grupos.Estabilidad.includes(elemento)) {
-        estabilidadTotal += stats.total;
-        estabilidadCumple += stats.cumplidas;
-      }
-      if (grupos.MejoraProcesos.includes(elemento)) {
-        mejoraTotal += stats.total;
-        mejoraCumple += stats.cumplidas;
-      }
+      if (grupos.Estabilidad.includes(elemento)) { estabilidadTotal += stats.total; estabilidadCumple += stats.cumplidas; }
+      if (grupos.MejoraProcesos.includes(elemento)) { mejoraTotal += stats.total; mejoraCumple += stats.cumplidas; }
     }
     const porcEstabilidad = estabilidadTotal ? Math.round((estabilidadCumple / estabilidadTotal) * 100) : 0;
     const porcMejora = mejoraTotal ? Math.round((mejoraCumple / mejoraTotal) * 100) : 0;
     document.getElementById('kpi-estabilidad').innerText = `${porcEstabilidad}%`;
     document.getElementById('kpi-mejora').innerText = `${porcMejora}%`;
 
-    // Radar chart: porcentaje por elemento
     const elementos = Object.keys(porElemento);
     const valoresRadar = elementos.map(e => Math.round((porElemento[e].cumplidas / porElemento[e].total) * 100));
     if (radarChart) radarChart.destroy();
     const ctxRadar = document.getElementById('radarChart').getContext('2d');
     radarChart = new Chart(ctxRadar, {
       type: 'radar',
-      data: {
-        labels: elementos,
-        datasets: [{
-          label: '% Cumplimiento',
-          data: valoresRadar,
-          backgroundColor: 'rgba(31, 58, 138, 0.2)',
-          borderColor: '#1e3a8a',
-          borderWidth: 2,
-          pointBackgroundColor: '#f97316',
-          pointBorderColor: '#fff',
-          pointHoverBackgroundColor: '#fff',
-          pointHoverBorderColor: '#f97316'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          r: {
-            beginAtZero: true,
-            max: 100,
-            ticks: { stepSize: 20, callback: (val) => val + '%' }
-          }
-        }
-      }
+      data: { labels: elementos, datasets: [{ label: '% Cumplimiento', data: valoresRadar, backgroundColor: 'rgba(31, 58, 138, 0.2)', borderColor: '#1e3a8a', borderWidth: 2, pointBackgroundColor: '#f97316', pointBorderColor: '#fff' }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: (val) => val + '%' } } } }
     });
 
-    // Gráfico de barras apiladas: por pilar, conteo de Sí/No
     const pilares = Object.keys(porPilar);
     const siCounts = pilares.map(p => porPilar[p].cumplidas);
     const noCounts = pilares.map(p => porPilar[p].total - porPilar[p].cumplidas);
-
     if (stackedBarChart) stackedBarChart.destroy();
     const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
     stackedBarChart = new Chart(ctxBar, {
       type: 'bar',
-      data: {
-        labels: pilares,
-        datasets: [
-          {
-            label: 'Sí',
-            data: siCounts,
-            backgroundColor: '#1e3a8a',
-            borderRadius: 4
-          },
-          {
-            label: 'No',
-            data: noCounts,
-            backgroundColor: '#f97316',
-            borderRadius: 4
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { stacked: true },
-          y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Cantidad de respuestas' } }
-        },
-        plugins: {
-          tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}` } },
-          legend: { position: 'top' }
-        }
-      }
+      data: { labels: pilares, datasets: [{ label: 'Sí', data: siCounts, backgroundColor: '#1e3a8a' }, { label: 'No', data: noCounts, backgroundColor: '#f97316' }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Cantidad de respuestas' } } }, plugins: { tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}` } }, legend: { position: 'top' } } }
     });
   }
 
@@ -933,22 +813,21 @@
     document.getElementById('kpi-mejora').innerText = '0%';
     if (radarChart) radarChart.destroy();
     if (stackedBarChart) stackedBarChart.destroy();
-    // Inicializar gráficos vacíos
     const ctxRadar = document.getElementById('radarChart').getContext('2d');
     radarChart = new Chart(ctxRadar, { type: 'radar', data: { labels: [], datasets: [] }, options: { responsive: true } });
     const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
     stackedBarChart = new Chart(ctxBar, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true } });
   }
 
-  // ========== EVENTOS GLOBALES ==========
+  // ========== EVENTOS ==========
   document.getElementById('login-btn').onclick = async () => {
     const username = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const result = await callGAS('login', { username, password });
     if (result.success) {
       currentUser = result.user;
-      await loadPreguntas();
-      showMain();
+      const ok = await loadPreguntas();
+      if (ok) showMain();
     } else {
       const errorDiv = document.getElementById('login-error');
       errorDiv.textContent = result.message;
@@ -956,14 +835,8 @@
       setTimeout(() => errorDiv.classList.add('hidden'), 4000);
     }
   };
-  document.getElementById('show-register').onclick = (e) => {
-    e.preventDefault();
-    document.getElementById('register-card').classList.remove('hidden');
-  };
-  document.getElementById('show-login').onclick = (e) => {
-    e.preventDefault();
-    document.getElementById('register-card').classList.add('hidden');
-  };
+  document.getElementById('show-register').onclick = (e) => { e.preventDefault(); document.getElementById('register-card').classList.remove('hidden'); };
+  document.getElementById('show-login').onclick = (e) => { e.preventDefault(); document.getElementById('register-card').classList.add('hidden'); };
   document.getElementById('register-btn').onclick = async () => {
     const name = document.getElementById('reg-name').value.trim();
     const username = document.getElementById('reg-email').value.trim();
@@ -983,26 +856,19 @@
     }
   };
   document.getElementById('logout-btn').onclick = () => showLogin();
-  document.getElementById('new-evaluation-btn').onclick = () => activarPestana('nueva');
-  document.getElementById('dashboard-btn').onclick = () => activarPestana('dashboard');
-  document.getElementById('submit-evaluation').onclick = submitEvaluation;
   document.getElementById('cancel-new').onclick = () => activarPestana('evaluaciones');
+  document.getElementById('submit-evaluation').onclick = submitEvaluation;
   document.getElementById('apply-filters-evaluaciones').onclick = () => aplicarFiltrosEvaluaciones();
   document.getElementById('reset-filters-evaluaciones').onclick = () => {
     document.getElementById('filter-empresa-evaluaciones').value = '';
     document.getElementById('filter-evaluador-evaluaciones').value = '';
     aplicarFiltrosEvaluaciones();
   };
-
-  // Eventos de pestañas
   document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tab = btn.getAttribute('data-tab');
-      activarPestana(tab);
-    });
+    btn.addEventListener('click', () => activarPestana(btn.getAttribute('data-tab')));
   });
+  document.getElementById('new-evaluation-btn')?.removeEventListener; // not needed, but keep for compatibility
 
-  // Inicialización
   showLogin();
 </script>
 </body>
