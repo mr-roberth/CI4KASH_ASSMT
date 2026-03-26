@@ -127,7 +127,8 @@
 
 <script>
   // ==================== CONFIGURACIÓN ====================
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbw1xpgnB-nlwkyUOJOptaF_euX5h0qwDaNftLIj9fK39lTg8mj-e-NUGw3WEZRPHfCOcg/exec";  // <-- CAMBIA ESTO
+  // 👇 REEMPLAZA ESTA URL POR LA DE TU WEB APP DESPLEGADO
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbw1xpgnB-nlwkyUOJOptaF_euX5h0qwDaNftLIj9fK39lTg8mj-e-NUGw3WEZRPHfCOcg/exec";
 
   let currentUser = null;
   let preguntas = [];
@@ -197,19 +198,18 @@
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
           html += `<tr>
-                     <td>${p.num}</td>
-                     <td>${p.criterio}</td>
-                     <td><div class="radio-group">
+                      <td>${p.num}</td>
+                      <td>${p.criterio}</td>
+                      <td><div class="radio-group">
                         <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                         <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                       </div></td>
-                   </tr>`;
+                    </tr>`;
         });
         html += `</tbody></table>`;
       }
     }
     container.innerHTML = html;
-    // Event listeners
     preguntas.forEach(p => {
       const radios = document.querySelectorAll(`input[name="q_${p.num}"]`);
       radios.forEach(radio => {
@@ -280,12 +280,12 @@
       let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Total puntos</th><th></th></tr></thead><tbody>`;
       result.evaluaciones.forEach(evalItem => {
         html += `<tr>
-                   <td>${escapeHtml(evalItem.empresa || '')}</td>
-                   <td>${evalItem.fecha_evaluacion || ''}</td>
-                   <td>${escapeHtml(evalItem.evaluador || '')}</td>
-                   <td>${evalItem.total_puntos || 0} / 80</td>
-                   <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${evalItem.id}')">Ver detalle</button></td>
-                 </tr>`;
+                    <td>${escapeHtml(evalItem.empresa || '')}</td>
+                    <td>${evalItem.fecha_evaluacion || ''}</td>
+                    <td>${escapeHtml(evalItem.evaluador || '')}</td>
+                    <td>${evalItem.total_puntos || 0} / 80</td>
+                    <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${evalItem.id}')">Ver detalle</button></td>
+                  </tr>`;
       });
       html += `</tbody></table>`;
       container.innerHTML = html;
