@@ -1,1 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Evaluación Operativa</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
 
+    body {
+      background: #f4f1e8;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Tarjetas */
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Formularios */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    /* Tablas estilo PDF */
+    .evaluation-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .evaluation-table th, .evaluation-table td {
+      border: 1px solid #d0c8b8;
+      padding: 8px 12px;
+      vertical-align: top;
+    }
+    .evaluation-table th {
+      background-color: #2c5e2e;
+      color: white;
+      font-weight: 600;
+      text-align: center;
+    }
+    .evaluation-table td {
+      background-color: #fffcf5;
+    }
+    .section-title {
+      background-color: #e9e2d4;
+      padding: 8px 12px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-top: 1rem;
+    }
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+    }
+    .btn {
+      background: #2c5e2e;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-secondary {
+      background: #6c757d;
+    }
+    .btn-danger {
+      background: #b33;
+    }
+    .alert {
+      padding: 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+    }
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #2c5e2e;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .hidden {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #2c5e2e;
+      color: white;
+    }
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Logo y encabezado -->
+  <div class="flex-between" style="margin-bottom: 2rem;">
+    <div class="logo">
+      <i class="fas fa-clipboard-list"></i> Gestión Operativa
+    </div>
+    <div id="user-info" class="hidden">
+      <span id="user-name"></span>
+      <button id="logout-btn" class="btn btn-secondary" style="margin-left: 1rem;">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- Vistas -->
+  <div id="login-view">
+    <div class="card">
+      <h2>Iniciar sesión</h2>
+      <div id="login-error" class="alert alert-error hidden"></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="login-password">
+        </div>
+      </div>
+      <button id="login-btn" class="btn">Ingresar</button>
+      <p style="margin-top: 1rem;">¿No tienes cuenta? <a href="#" id="show-register">Regístrate aquí</a></p>
+    </div>
+    <div class="card hidden" id="register-card">
+      <h2>Registro</h2>
+      <div id="register-error" class="alert alert-error hidden"></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre completo</label>
+          <input type="text" id="reg-name">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="reg-email">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="reg-password">
+        </div>
+      </div>
+      <button id="register-btn" class="btn">Registrarse</button>
+      <p style="margin-top: 1rem;"><a href="#" id="show-login">← Volver al login</a></p>
+    </div>
+  </div>
+
+  <div id="main-view" class="hidden">
+    <div class="flex-between" style="margin-bottom: 1rem;">
+      <div>
+        <button id="new-evaluation-btn" class="btn">Nueva evaluación</button>
+        <button id="dashboard-btn" class="btn btn-secondary">Dashboard</button>
+      </div>
+    </div>
+    <div id="new-evaluation-form" class="card hidden">
+      <h2>Nueva evaluación</h2>
+      <div id="eval-error" class="alert alert-error hidden"></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Empresa</label>
+          <input type="text" id="empresa">
+        </div>
+        <div class="form-group">
+          <label>Fecha de evaluación</label>
+          <input type="date" id="fecha-evaluacion">
+        </div>
+        <div class="form-group">
+          <label>Evaluador</label>
+          <input type="text" id="evaluador" readonly>
+        </div>
+        <div class="form-group">
+          <label>Representante de organización</label>
+          <input type="text" id="representante">
+        </div>
+        <div class="form-group">
+          <label>Asistentes</label>
+          <input type="text" id="asistentes">
+        </div>
+      </div>
+      <div id="preguntas-container"></div>
+      <button id="submit-evaluation" class="btn">Guardar evaluación</button>
+    </div>
+    <div id="dashboard-view" class="hidden">
+      <div class="card">
+        <h2>Evaluaciones realizadas</h2>
+        <div class="filter-bar">
+          <div class="form-group">
+            <label>Filtrar por empresa</label>
+            <input type="text" id="filter-empresa" placeholder="Nombre de empresa">
+          </div>
+          <div class="form-group">
+            <label>Filtrar por evaluador</label>
+            <input type="text" id="filter-evaluador" placeholder="Email evaluador">
+          </div>
+          <button id="apply-filters" class="btn">Aplicar filtros</button>
+        </div>
+        <div id="evaluaciones-list"></div>
+      </div>
+    </div>
+    <div id="detalle-view" class="card hidden">
+      <div class="flex-between">
+        <h2>Detalle de evaluación</h2>
+        <button id="back-to-dashboard" class="btn btn-secondary">← Volver</button>
+      </div>
+      <div id="detalle-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Configuración
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxUQx-kn_eO1UJn8crzqLJWWDheR_gZpNiApbHrkpdTZPfshuZU29DICrF9YSKiMBbVjQ/exec"; // <-- CAMBIA ESTO
+
+  let currentUser = null;
+  let preguntas = [];
+  let respuestasSeleccionadas = {};
+
+  // Helper fetch
+  async function callGAS(action, data = {}) {
+    data.action = action;
+    try {
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error(error);
+      return { status: "error", message: error.message };
+    }
+  }
+
+  // Mostrar/ocultar vistas
+  function showLogin() {
+    document.getElementById('login-view').classList.remove('hidden');
+    document.getElementById('main-view').classList.add('hidden');
+    document.getElementById('register-card').classList.add('hidden');
+  }
+
+  function showMain() {
+    document.getElementById('login-view').classList.add('hidden');
+    document.getElementById('main-view').classList.remove('hidden');
+    document.getElementById('new-evaluation-form').classList.add('hidden');
+    document.getElementById('dashboard-view').classList.add('hidden');
+    document.getElementById('detalle-view').classList.add('hidden');
+    loadDashboard();
+  }
+
+  async function loadDashboard() {
+    const filterEmpresa = document.getElementById('filter-empresa').value;
+    const filterEvaluador = document.getElementById('filter-evaluador').value;
+    const result = await callGAS('getEvaluaciones', { filtroEmpresa: filterEmpresa, filtroEvaluador: filterEvaluador });
+    if (result.status === 'success') {
+      const tbody = document.getElementById('evaluaciones-list');
+      tbody.innerHTML = '<table><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Total puntos</th><th></th></tr></thead><tbody></tbody></table>';
+      const body = tbody.querySelector('tbody');
+      result.evaluaciones.forEach(eval => {
+        const row = body.insertRow();
+        row.insertCell(0).textContent = eval.empresa;
+        row.insertCell(1).textContent = eval.fecha_evaluacion;
+        row.insertCell(2).textContent = eval.evaluador;
+        row.insertCell(3).textContent = eval.total_puntos;
+        const btnCell = row.insertCell(4);
+        const btn = document.createElement('button');
+        btn.textContent = 'Ver detalle';
+        btn.className = 'btn';
+        btn.onclick = () => showDetalle(eval.id);
+        btnCell.appendChild(btn);
+      });
+    } else {
+      alert('Error al cargar evaluaciones: ' + result.message);
+    }
+  }
+
+  async function showDetalle(id) {
+    const result = await callGAS('getEvaluacionDetalle', { id });
+    if (result.status === 'success') {
+      const evaluacion = result.evaluacion;
+      const respuestas = result.respuestas;
+      // Agrupar respuestas por num
+      const respMap = {};
+      respuestas.forEach(r => respMap[r.num] = r.respuesta);
+      // Agrupar preguntas por pilar y elemento
+      const grouped = {};
+      preguntas.forEach(p => {
+        if (!grouped[p.pilar]) grouped[p.pilar] = {};
+        if (!grouped[p.pilar][p.elemento]) grouped[p.pilar][p.elemento] = [];
+        grouped[p.pilar][p.elemento].push(p);
+      });
+      let html = `<div><strong>Empresa:</strong> ${evaluacion.empresa}</div>
+                  <div><strong>Fecha:</strong> ${evaluacion.fecha_evaluacion}</div>
+                  <div><strong>Evaluador:</strong> ${evaluacion.evaluador}</div>
+                  <div><strong>Representante:</strong> ${evaluacion.representante}</div>
+                  <div><strong>Asistentes:</strong> ${evaluacion.asistentes}</div>
+                  <div><strong>Total puntos:</strong> ${evaluacion.total_puntos} / 80</div><br>`;
+      for (const pilar in grouped) {
+        html += `<div class="section-title">${pilar}</div>`;
+        for (const elemento in grouped[pilar]) {
+          html += `<div style="background:#e9e2d4; padding:4px 8px; font-weight:bold;">${elemento}</div>`;
+          html += `<table class="evaluation-table">
+                    <thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+          grouped[pilar][elemento].forEach(p => {
+            const respuesta = respMap[p.num] || 'No';
+            html += `<tr>
+                        <td>${p.num}</td>
+                        <td>${p.criterio}</td>
+                        <td>${respuesta === 'Sí' ? '✓ Sí' : '✗ No'}</td>
+                      </tr>`;
+          });
+          html += `</tbody></table>`;
+        }
+      }
+      document.getElementById('detalle-content').innerHTML = html;
+      document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('detalle-view').classList.remove('hidden');
+    } else {
+      alert('Error: ' + result.message);
+    }
+  }
+
+  function renderPreguntas() {
+    const container = document.getElementById('preguntas-container');
+    // Agrupar por pilar y elemento
+    const grouped = {};
+    preguntas.forEach(p => {
+      if (!grouped[p.pilar]) grouped[p.pilar] = {};
+      if (!grouped[p.pilar][p.elemento]) grouped[p.pilar][p.elemento] = [];
+      grouped[p.pilar][p.elemento].push(p);
+    });
+    let html = '';
+    for (const pilar in grouped) {
+      html += `<div class="section-title">${pilar}</div>`;
+      for (const elemento in grouped[pilar]) {
+        html += `<div style="background:#e9e2d4; padding:4px 8px; font-weight:bold;">${elemento}</div>`;
+        html += `<table class="evaluation-table">
+                  <thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+        grouped[pilar][elemento].forEach(p => {
+          html += `<tr>
+                      <td>${p.num}</td>
+                      <td>${p.criterio}</td>
+                      <td><div class="radio-group">
+                          <label><input type="radio" name="q_${p.num}" value="Sí" ${respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : ''}> Sí</label>
+                          <label><input type="radio" name="q_${p.num}" value="No" ${respuestasSeleccionadas[p.num] === 'No' ? 'checked' : ''}> No</label>
+                        </div></td>
+                    </tr>`;
+        });
+        html += `</tbody></table>`;
+      }
+    }
+    container.innerHTML = html;
+    // Agregar listeners para actualizar respuestasSeleccionadas
+    preguntas.forEach(p => {
+      const radios = document.querySelectorAll(`input[name="q_${p.num}"]`);
+      radios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            respuestasSeleccionadas[p.num] = e.target.value;
+          }
+        });
+      });
+    });
+  }
+
+  async function submitEvaluation() {
+    const empresa = document.getElementById('empresa').value.trim();
+    const fecha = document.getElementById('fecha-evaluacion').value;
+    const evaluador = document.getElementById('evaluador').value;
+    const representante = document.getElementById('representante').value.trim();
+    const asistentes = document.getElementById('asistentes').value.trim();
+    if (!empresa || !fecha || !representante) {
+      document.getElementById('eval-error').textContent = 'Por favor completa los campos obligatorios (Empresa, Fecha, Representante)';
+      document.getElementById('eval-error').classList.remove('hidden');
+      return;
+    }
+    const respuestas = [];
+    for (let p of preguntas) {
+      const valor = respuestasSeleccionadas[p.num] || 'No';
+      respuestas.push({ num: p.num, respuesta: valor });
+    }
+    const result = await callGAS('submitEvaluacion', {
+      empresa, fecha, evaluador, representante, asistentes, respuestas
+    });
+    if (result.status === 'success') {
+      alert(`Evaluación guardada. Total: ${result.total} puntos.`);
+      document.getElementById('new-evaluation-form').classList.add('hidden');
+      loadDashboard();
+      document.getElementById('dashboard-view').classList.remove('hidden');
+    } else {
+      alert('Error: ' + result.message);
+    }
+  }
+
+  // Event listeners
+  document.getElementById('login-btn').onclick = async () => {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const result = await callGAS('login', { email, password });
+    if (result.status === 'success') {
+      currentUser = result.user;
+      document.getElementById('user-name').textContent = currentUser.nombre;
+      document.getElementById('user-info').classList.remove('hidden');
+      // Cargar preguntas y mostrar main
+      const pregResult = await callGAS('getPreguntas');
+      if (pregResult.status === 'success') {
+        preguntas = pregResult.preguntas;
+        renderPreguntas();
+      } else {
+        alert('Error al cargar preguntas');
+        return;
+      }
+      showMain();
+    } else {
+      const errorDiv = document.getElementById('login-error');
+      errorDiv.textContent = result.message;
+      errorDiv.classList.remove('hidden');
+    }
+  };
+
+  document.getElementById('show-register').onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('register-card').classList.remove('hidden');
+  };
+  document.getElementById('show-login').onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('register-card').classList.add('hidden');
+  };
+  document.getElementById('register-btn').onclick = async () => {
+    const nombre = document.getElementById('reg-name').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const result = await callGAS('register', { nombre, email, password });
+    if (result.status === 'success') {
+      alert('Registro exitoso, ahora puedes iniciar sesión');
+      document.getElementById('register-card').classList.add('hidden');
+    } else {
+      document.getElementById('register-error').textContent = result.message;
+      document.getElementById('register-error').classList.remove('hidden');
+    }
+  };
+  document.getElementById('logout-btn').onclick = () => {
+    currentUser = null;
+    showLogin();
+  };
+  document.getElementById('new-evaluation-btn').onclick = () => {
+    document.getElementById('new-evaluation-form').classList.remove('hidden');
+    document.getElementById('dashboard-view').classList.add('hidden');
+    document.getElementById('detalle-view').classList.add('hidden');
+    document.getElementById('evaluador').value = currentUser.email;
+    document.getElementById('fecha-evaluacion').valueAsDate = new Date();
+  };
+  document.getElementById('dashboard-btn').onclick = () => {
+    loadDashboard();
+    document.getElementById('new-evaluation-form').classList.add('hidden');
+    document.getElementById('dashboard-view').classList.remove('hidden');
+    document.getElementById('detalle-view').classList.add('hidden');
+  };
+  document.getElementById('apply-filters').onclick = () => loadDashboard();
+  document.getElementById('back-to-dashboard').onclick = () => {
+    loadDashboard();
+    document.getElementById('detalle-view').classList.add('hidden');
+    document.getElementById('dashboard-view').classList.remove('hidden');
+  };
+  document.getElementById('submit-evaluation').onclick = submitEvaluation;
+
+  // Inicialización: fecha actual en nuevo formulario
+  window.onload = () => {
+    showLogin();
+  };
+</script>
+</body>
+</html>
