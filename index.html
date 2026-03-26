@@ -127,13 +127,12 @@
 
 <script>
   // ==================== CONFIGURACIÓN ====================
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbw1xpgnB-nlwkyUOJOptaF_euX5h0qwDaNftLIj9fK39lTg8mj-e-NUGw3WEZRPHfCOcg/exec";  // Reemplazar con URL real
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbw1xpgnB-nlwkyUOJOptaF_euX5h0qwDaNftLIj9fK39lTg8mj-e-NUGw3WEZRPHfCOcg/exec";  // <-- CAMBIA ESTO
 
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
 
-  // Helper fetch (adaptado al patrón de tu código funcional)
   async function callGAS(action, data = {}) {
     data.action = action;
     try {
@@ -151,7 +150,6 @@
     }
   }
 
-  // Mostrar/ocultar vistas
   function showLogin() {
     document.getElementById('login-view').classList.remove('hidden');
     document.getElementById('main-view').classList.add('hidden');
@@ -165,14 +163,12 @@
     document.getElementById('main-view').classList.remove('hidden');
     document.getElementById('user-info').classList.remove('hidden');
     document.getElementById('user-name-display').textContent = currentUser.name;
-    // Mostrar dashboard por defecto
     document.getElementById('new-evaluation-form').classList.add('hidden');
     document.getElementById('dashboard-view').classList.remove('hidden');
     document.getElementById('detalle-view').classList.add('hidden');
     loadDashboard();
   }
 
-  // Cargar preguntas
   async function loadPreguntas() {
     const result = await callGAS('getPreguntas');
     if (result.success) {
@@ -183,7 +179,6 @@
     }
   }
 
-  // Renderizar formulario de preguntas
   function renderPreguntasForm() {
     const container = document.getElementById('preguntas-container');
     const grouped = {};
@@ -202,19 +197,19 @@
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
           html += `<tr>
-                    <td>${p.num}</td>
-                    <td>${p.criterio}</td>
-                    <td><div class="radio-group">
-                      <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
-                      <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
-                    </div></td>
+                     <td>${p.num}</td>
+                     <td>${p.criterio}</td>
+                     <td><div class="radio-group">
+                        <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
+                        <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
+                      </div></td>
                    </tr>`;
         });
         html += `</tbody></table>`;
       }
     }
     container.innerHTML = html;
-    // Event listeners para radios
+    // Event listeners
     preguntas.forEach(p => {
       const radios = document.querySelectorAll(`input[name="q_${p.num}"]`);
       radios.forEach(radio => {
@@ -225,7 +220,6 @@
     });
   }
 
-  // Guardar evaluación
   async function submitEvaluation() {
     const empresa = document.getElementById('empresa').value.trim();
     const fecha = document.getElementById('fecha-evaluacion').value;
@@ -273,7 +267,6 @@
     renderPreguntasForm();
   }
 
-  // Cargar dashboard
   async function loadDashboard() {
     const filtroEmpresa = document.getElementById('filter-empresa').value;
     const filtroEvaluador = document.getElementById('filter-evaluador').value;
@@ -287,11 +280,11 @@
       let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Total puntos</th><th></th></tr></thead><tbody>`;
       result.evaluaciones.forEach(evalItem => {
         html += `<tr>
-                  <td>${escapeHtml(evalItem.empresa || '')}</td>
-                  <td>${evalItem.fecha_evaluacion || ''}</td>
-                  <td>${escapeHtml(evalItem.evaluador || '')}</td>
-                  <td>${evalItem.total_puntos || 0} / 80</td>
-                  <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${evalItem.id}')">Ver detalle</button></td>
+                   <td>${escapeHtml(evalItem.empresa || '')}</td>
+                   <td>${evalItem.fecha_evaluacion || ''}</td>
+                   <td>${escapeHtml(evalItem.evaluador || '')}</td>
+                   <td>${evalItem.total_puntos || 0} / 80</td>
+                   <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${evalItem.id}')">Ver detalle</button></td>
                  </tr>`;
       });
       html += `</tbody></table>`;
@@ -319,7 +312,6 @@
       const respMap = {};
       respuestas.forEach(r => respMap[r.num] = r.respuesta);
 
-      // Agrupar preguntas para mostrar como PDF
       const grouped = {};
       preguntas.forEach(p => {
         if (!grouped[p.pilar]) grouped[p.pilar] = {};
@@ -352,14 +344,14 @@
     }
   };
 
-  // ==================== EVENTOS ====================
+  // Eventos
   document.getElementById('login-btn').onclick = async () => {
     const username = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const result = await callGAS('login', { username, password });
     if (result.success) {
       currentUser = result.user;
-      await loadPreguntas();  // Cargar preguntas antes de mostrar main
+      await loadPreguntas();
       showMain();
     } else {
       const errorDiv = document.getElementById('login-error');
@@ -422,7 +414,6 @@
     document.getElementById('dashboard-view').classList.remove('hidden');
   };
 
-  // Inicializar vista
   showLogin();
 </script>
 </body>
