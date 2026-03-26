@@ -3,45 +3,250 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="referrer" content="no-referrer"> <!-- importante para evitar problemas de origen -->
+  <meta name="referrer" content="no-referrer">
   <title>Gestión Operativa | Evaluación de Madurez</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* (todos los estilos originales, sin cambios) */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #f0efe7; color: #2c3e2f; line-height: 1.5; }
-    .app-container { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; border-bottom: 2px solid #d4cdb2; padding-bottom: 1rem; }
-    .logo-area { display: flex; align-items: center; gap: 0.75rem; }
-    .logo-icon { font-size: 2rem; color: #2c5e2e; }
-    .logo-text { font-size: 1.5rem; font-weight: 700; color: #2c5e2e; }
-    .user-info { display: flex; align-items: center; gap: 1rem; background: white; padding: 0.5rem 1rem; border-radius: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .user-name { font-weight: 600; font-size: 0.9rem; }
-    .btn-logout { background: none; border: none; color: #b33; cursor: pointer; font-size: 1rem; }
-    .card { background: white; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); padding: 1.8rem; margin-bottom: 2rem; }
-    .card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: #2c5e2e; border-left: 4px solid #d4b87a; padding-left: 1rem; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem; }
-    .form-group label { font-weight: 600; display: block; margin-bottom: 0.4rem; font-size: 0.85rem; color: #5a5a4a; }
-    .form-group input, .form-group select { width: 100%; padding: 0.7rem 1rem; border: 1px solid #ddd6c8; border-radius: 12px; font-family: inherit; background: #fefcf7; }
-    .evaluation-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
-    .evaluation-table th { background: #2c5e2e; color: white; padding: 10px 12px; font-weight: 600; text-align: center; border: 1px solid #406d42; }
-    .evaluation-table td { border: 1px solid #e2dbc8; padding: 10px 12px; background: #fffcf5; vertical-align: top; }
-    .section-title { background: #e9e2d4; padding: 10px 15px; font-weight: 700; font-size: 1.1rem; margin-top: 1.5rem; border-radius: 10px; color: #2c3e2f; }
-    .sub-section { background: #f4f0e6; padding: 6px 12px; font-weight: 600; margin-top: 0.5rem; border-left: 4px solid #d4b87a; }
-    .radio-group { display: flex; gap: 1.5rem; align-items: center; }
-    .btn { background: #2c5e2e; color: white; border: none; padding: 0.7rem 1.4rem; border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; }
-    .btn-secondary { background: #6c757d; }
-    .btn-outline { background: white; border: 1px solid #2c5e2e; color: #2c5e2e; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-    .alert { padding: 0.8rem 1rem; border-radius: 12px; margin-bottom: 1rem; }
-    .alert-error { background: #fbe9e7; color: #c62828; border-left: 4px solid #c62828; }
-    .alert-success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
-    .hidden { display: none; }
-    table.data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    table.data-table th, table.data-table td { border: 1px solid #e2dbc8; padding: 10px; text-align: left; }
-    table.data-table th { background: #e9e2d4; font-weight: 600; }
-    @media (max-width: 768px) { .app-container { padding: 1rem; } .card { padding: 1.2rem; } .form-grid { grid-template-columns: 1fr; } .evaluation-table { font-size: 0.75rem; } }
+    /* ========== DISEÑO CORPORATIVO (basado en colores del PDF) ========== */
+    :root {
+      --primary: #1e5f2e;
+      --primary-dark: #144d22;
+      --secondary: #f5b042;
+      --accent: #2c7a47;
+      --light-bg: #f9fafb;
+      --border: #e2e8f0;
+      --text: #2d3748;
+      --text-light: #4a5568;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--light-bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border-bottom: 2px solid var(--secondary);
+      padding-bottom: 1rem;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .logo-icon {
+      font-size: 2rem;
+      color: var(--primary);
+    }
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: white;
+      padding: 0.5rem 1rem;
+      border-radius: 40px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .user-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .btn-logout {
+      background: none;
+      border: none;
+      color: #b33;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: var(--shadow);
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+      transition: all 0.2s;
+    }
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+      border-left: 4px solid var(--secondary);
+      padding-left: 1rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      font-family: inherit;
+      background: white;
+    }
+    .evaluation-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+      background: white;
+    }
+    .evaluation-table th {
+      background: var(--primary);
+      color: white;
+      padding: 12px;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid var(--primary-dark);
+    }
+    .evaluation-table td {
+      border: 1px solid var(--border);
+      padding: 12px;
+      vertical-align: top;
+    }
+    .section-title {
+      background: #f1f5f9;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-top: 1.5rem;
+      border-radius: 10px;
+      color: var(--primary);
+      border-left: 4px solid var(--secondary);
+    }
+    .sub-section {
+      background: #f8fafc;
+      padding: 8px 16px;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      border-left: 4px solid var(--secondary);
+      color: var(--text);
+    }
+    .radio-group {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #64748b;
+    }
+    .btn-secondary:hover {
+      background: #475569;
+    }
+    .btn-outline {
+      background: white;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .alert {
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+    }
+    .alert-error {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-left: 4px solid #b91c1c;
+    }
+    .alert-success {
+      background: #e0f2e9;
+      color: var(--primary);
+      border-left: 4px solid var(--primary);
+    }
+    .hidden {
+      display: none;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    table.data-table th, table.data-table td {
+      border: 1px solid var(--border);
+      padding: 12px;
+      text-align: left;
+    }
+    table.data-table th {
+      background: #f1f5f9;
+      font-weight: 600;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 1.5rem;
+    }
+    .filter-bar .form-group {
+      flex: 1;
+      min-width: 150px;
+    }
+    @media (max-width: 768px) {
+      .app-container { padding: 1rem; }
+      .card { padding: 1.2rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .evaluation-table { font-size: 0.75rem; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+    }
   </style>
 </head>
 <body>
@@ -65,7 +270,7 @@
       <div class="form-group"><label>Correo electrónico</label><input type="email" id="login-email"></div>
       <div class="form-group"><label>Contraseña</label><input type="password" id="login-password"></div>
       <button id="login-btn" class="btn" style="width: 100%; justify-content: center;">Ingresar</button>
-      <p style="margin-top: 1.5rem; text-align: center;">¿No tienes cuenta? <a href="#" id="show-register" style="color: #2c5e2e;">Regístrate aquí</a></p>
+      <p style="margin-top: 1.5rem; text-align: center;">¿No tienes cuenta? <a href="#" id="show-register" style="color: var(--primary);">Regístrate aquí</a></p>
     </div>
     <div class="card hidden" id="register-card" style="max-width: 480px; margin: 0 auto;">
       <div class="card-title">Registro de usuario</div>
@@ -108,10 +313,21 @@
     <!-- Dashboard -->
     <div id="dashboard-view" class="card hidden">
       <div class="card-title">Evaluaciones realizadas</div>
-      <div class="flex-between" style="gap: 1rem; flex-wrap: wrap;">
-        <div style="flex:1;"><label>Filtrar empresa</label><input type="text" id="filter-empresa" class="form-group" style="margin:0;"></div>
-        <div style="flex:1;"><label>Filtrar evaluador</label><input type="text" id="filter-evaluador" class="form-group" style="margin:0;"></div>
-        <div style="align-self: flex-end;"><button id="apply-filters" class="btn">Aplicar filtros</button></div>
+      <div class="filter-bar">
+        <div class="form-group">
+          <label>Filtrar por empresa</label>
+          <select id="filter-empresa">
+            <option value="">Todas las empresas</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Filtrar por evaluador</label>
+          <select id="filter-evaluador">
+            <option value="">Todos los evaluadores</option>
+          </select>
+        </div>
+        <button id="apply-filters" class="btn">Aplicar filtros</button>
+        <button id="reset-filters" class="btn btn-secondary">Mostrar todas</button>
       </div>
       <div id="evaluaciones-list" style="overflow-x: auto;"></div>
     </div>
@@ -129,20 +345,19 @@
 
 <script>
   // ==================== CONFIGURACIÓN ====================
-  // 🔁 REEMPLAZA ESTA URL CON LA DE TU NUEVO DESPLIEGUE
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxICilStWld6uZjecBT3cLmM176XEdVyz5QJQs52h0PYN6Ar_V89Gtla78dsQDuvu1bg/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxICilStWld6uZjecBT3cLmM176XEdVyz5QJQs52h0PYN6Ar_V89Gtla78dsQDuvu1bg/exec"; // ← REEMPLAZAR CON TU URL
 
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
 
-  // 🔧 CORRECCIÓN: petición simplificada SIN HEADERS PERSONALIZADOS
+  // ========== FUNCIÓN FETCH SIMPLIFICADA (sin CORS manual) ==========
   async function callGAS(action, data = {}) {
     data.action = action;
     try {
       const response = await fetch(GAS_URL, {
         method: 'POST',
-        body: JSON.stringify(data)   // ← NO headers, NO mode: 'cors' explícito (por defecto es cors)
+        body: JSON.stringify(data)
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
@@ -152,7 +367,7 @@
     }
   }
 
-  // (el resto de las funciones permanecen igual que en tu código original)
+  // ========== UI AUXILIARES ==========
   function showLogin() {
     document.getElementById('login-view').classList.remove('hidden');
     document.getElementById('main-view').classList.add('hidden');
@@ -172,6 +387,7 @@
     loadDashboard();
   }
 
+  // ========== PREGUNTAS ==========
   async function loadPreguntas() {
     const result = await callGAS('getPreguntas');
     if (result.success) {
@@ -195,18 +411,18 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<table class="evaluation-table"><thead> panel<th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
+        html += `<table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
           html += `<tr>
-                        <td>${p.num}</td>
-                        <td>${p.criterio}</td>
-                        <td><div class="radio-group">
+                      <td>${p.num}</td>
+                      <td>${p.criterio}</td>
+                      <td><div class="radio-group">
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                      </tr>`;
+                    </tr>`;
         });
         html += `</tbody></table>`;
       }
@@ -222,6 +438,7 @@
     });
   }
 
+  // ========== ENVÍO DE EVALUACIÓN ==========
   async function submitEvaluation() {
     const empresa = document.getElementById('empresa').value.trim();
     const fecha = document.getElementById('fecha-evaluacion').value;
@@ -234,6 +451,11 @@
       return;
     }
 
+    // Deshabilitar botón para evitar doble envío
+    const submitBtn = document.getElementById('submit-evaluation');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
     const respuestas = preguntas.map(p => ({
       num: p.num,
       respuesta: respuestasSeleccionadas[p.num] || 'No'
@@ -242,8 +464,10 @@
     const result = await callGAS('submitEvaluacion', {
       empresa, fecha, evaluador, representante, asistentes, respuestas
     });
+
     if (result.success) {
-      alert(`✅ Evaluación guardada. Total: ${result.total} / 80 puntos.`);
+      const porcentaje = Math.round((result.total / preguntas.length) * 100);
+      alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length} (${porcentaje}%)`);
       resetForm();
       document.getElementById('new-evaluation-form').classList.add('hidden');
       document.getElementById('dashboard-view').classList.remove('hidden');
@@ -251,6 +475,8 @@
     } else {
       showEvalError(result.message);
     }
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = 'Guardar evaluación';
   }
 
   function showEvalError(msg) {
@@ -269,31 +495,80 @@
     renderPreguntasForm();
   }
 
+  // ========== DASHBOARD CON FILTROS DINÁMICOS ==========
+  let todasEvaluaciones = [];
+
   async function loadDashboard() {
-    const filtroEmpresa = document.getElementById('filter-empresa').value;
-    const filtroEvaluador = document.getElementById('filter-evaluador').value;
-    const result = await callGAS('getEvaluaciones', { filtroEmpresa, filtroEvaluador });
+    const result = await callGAS('getEvaluaciones');
     if (result.success) {
-      const container = document.getElementById('evaluaciones-list');
-      if (!result.evaluaciones.length) {
-        container.innerHTML = '<div class="alert">No hay evaluaciones registradas.</div>';
-        return;
-      }
-      let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Total puntos</th><th></th></tr></thead><tbody>`;
-      result.evaluaciones.forEach(evalItem => {
-        html += `<tr>
-                    <td>${escapeHtml(evalItem.empresa || '')}</td>
-                    <td>${evalItem.fecha_evaluacion || ''}</td>
-                    <td>${escapeHtml(evalItem.evaluador || '')}</td>
-                    <td>${evalItem.total_puntos || 0} / 80</td>
-                    <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${evalItem.id}')">Ver detalle</button></td>
-                  </tr>`;
-      });
-      html += `</tbody></table>`;
-      container.innerHTML = html;
+      todasEvaluaciones = result.evaluaciones;
+      poblarFiltros(todasEvaluaciones);
+      aplicarFiltros();
     } else {
-      container.innerHTML = `<div class="alert alert-error">Error: ${result.message}</div>`;
+      document.getElementById('evaluaciones-list').innerHTML = `<div class="alert alert-error">Error: ${result.message}</div>`;
     }
+  }
+
+  function poblarFiltros(evaluaciones) {
+    const empresas = [...new Set(evaluaciones.map(e => e.empresa).filter(e => e))];
+    const evaluadores = [...new Set(evaluaciones.map(e => e.evaluador).filter(e => e))];
+
+    const empresaSelect = document.getElementById('filter-empresa');
+    const evaluadorSelect = document.getElementById('filter-evaluador');
+
+    empresaSelect.innerHTML = '<option value="">Todas las empresas</option>';
+    empresas.forEach(emp => {
+      empresaSelect.innerHTML += `<option value="${escapeHtml(emp)}">${escapeHtml(emp)}</option>`;
+    });
+
+    evaluadorSelect.innerHTML = '<option value="">Todos los evaluadores</option>';
+    evaluadores.forEach(evalName => {
+      evaluadorSelect.innerHTML += `<option value="${escapeHtml(evalName)}">${escapeHtml(evalName)}</option>`;
+    });
+  }
+
+  function aplicarFiltros() {
+    const empresaFiltro = document.getElementById('filter-empresa').value;
+    const evaluadorFiltro = document.getElementById('filter-evaluador').value;
+
+    let filtradas = [...todasEvaluaciones];
+
+    if (empresaFiltro) {
+      filtradas = filtradas.filter(e => e.empresa === empresaFiltro);
+    }
+    if (evaluadorFiltro) {
+      filtradas = filtradas.filter(e => e.evaluador === evaluadorFiltro);
+    }
+
+    // Ordenar por fecha descendente (la más reciente primero)
+    filtradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    renderEvaluacionesList(filtradas);
+  }
+
+  function renderEvaluacionesList(evaluaciones) {
+    const container = document.getElementById('evaluaciones-list');
+    if (!evaluaciones.length) {
+      container.innerHTML = '<div class="alert">No hay evaluaciones con los filtros seleccionados.</div>';
+      return;
+    }
+
+    let html = `<table class="data-table"><thead><tr>
+                  <th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th>
+                </tr></thead><tbody>`;
+    evaluaciones.forEach(e => {
+      const puntos = e.total_puntos || 0;
+      const porcentaje = Math.round((puntos / preguntas.length) * 100);
+      html += `<tr>
+                <td>${escapeHtml(e.empresa || '')}</td>
+                <td>${e.fecha_evaluacion || ''}</td>
+                <td>${escapeHtml(e.evaluador || '')}</td>
+                <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${e.id}')">Ver detalle</button></td>
+               </tr>`;
+    });
+    html += `</tbody></table>`;
+    container.innerHTML = html;
   }
 
   function escapeHtml(str) {
@@ -325,7 +600,7 @@
                   <strong>Evaluador:</strong> ${evaluacion.evaluador}<br>
                   <strong>Representante:</strong> ${evaluacion.representante}<br>
                   <strong>Asistentes:</strong> ${evaluacion.asistentes}<br>
-                  <strong>Total puntos:</strong> ${evaluacion.total_puntos} / 80</div>`;
+                  <strong>Total puntos:</strong> ${evaluacion.total_puntos} / ${preguntas.length}</div>`;
       for (const pilar in grouped) {
         html += `<div class="section-title">${pilar}</div>`;
         for (const elemento in grouped[pilar]) {
@@ -346,7 +621,7 @@
     }
   };
 
-  // Eventos (igual que antes)
+  // ========== EVENTOS ==========
   document.getElementById('login-btn').onclick = async () => {
     const username = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
@@ -393,7 +668,7 @@
     document.getElementById('new-evaluation-form').classList.remove('hidden');
     document.getElementById('dashboard-view').classList.add('hidden');
     document.getElementById('detalle-view').classList.add('hidden');
-    document.getElementById('evaluador').value = currentUser.username;
+    document.getElementById('evaluador').value = currentUser.name; // ← Nombre completo
     document.getElementById('fecha-evaluacion').valueAsDate = new Date();
     respuestasSeleccionadas = {};
     renderPreguntasForm();
@@ -404,7 +679,12 @@
     document.getElementById('detalle-view').classList.add('hidden');
     loadDashboard();
   };
-  document.getElementById('apply-filters').onclick = () => loadDashboard();
+  document.getElementById('apply-filters').onclick = () => aplicarFiltros();
+  document.getElementById('reset-filters').onclick = () => {
+    document.getElementById('filter-empresa').value = '';
+    document.getElementById('filter-evaluador').value = '';
+    aplicarFiltros();
+  };
   document.getElementById('back-to-dashboard').onclick = () => {
     document.getElementById('detalle-view').classList.add('hidden');
     document.getElementById('dashboard-view').classList.remove('hidden');
