@@ -7,17 +7,18 @@
   <title>Gestión Operativa | Evaluación de Madurez</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* ========== DISEÑO CORPORATIVO (basado en colores del PDF) ========== */
+    /* ========== NUEVA PALETA DE COLORES ========== */
     :root {
-      --primary: #1e5f2e;
-      --primary-dark: #144d22;
-      --secondary: #f5b042;
-      --accent: #2c7a47;
+      --primary-dark: #0f2b5e;    /* azul oscuro */
+      --primary: #1e3a8a;         /* azul medio */
+      --secondary: #f97316;        /* naranja */
+      --secondary-light: #ffedd5;
       --light-bg: #f9fafb;
       --border: #e2e8f0;
-      --text: #2d3748;
-      --text-light: #4a5568;
+      --text: #1f2937;
+      --text-light: #4b5563;
       --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
     * {
@@ -36,57 +37,95 @@
       margin: 0 auto;
       padding: 2rem 1.5rem;
     }
+    /* Header con colores azul y naranja */
     .header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      border-radius: 1rem 1rem 0 0;
+      margin: -2rem -1.5rem 2rem -1.5rem;
+      padding: 1.5rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
       flex-wrap: wrap;
       gap: 1rem;
-      border-bottom: 2px solid var(--secondary);
-      padding-bottom: 1rem;
+      box-shadow: var(--shadow);
     }
     .logo-area {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 1rem;
     }
-    .logo-icon {
-      font-size: 2rem;
-      color: var(--primary);
+    .logo-area img {
+      height: 45px;
+      width: auto;
     }
     .logo-text {
       font-size: 1.5rem;
       font-weight: 700;
-      color: var(--primary);
+      color: white;
+      letter-spacing: -0.5px;
     }
     .user-info {
       display: flex;
       align-items: center;
       gap: 1rem;
-      background: white;
+      background: rgba(255,255,255,0.15);
       padding: 0.5rem 1rem;
       border-radius: 40px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      backdrop-filter: blur(4px);
     }
     .user-name {
       font-weight: 600;
       font-size: 0.9rem;
+      color: white;
     }
     .btn-logout {
       background: none;
       border: none;
-      color: #b33;
+      color: white;
       cursor: pointer;
       font-size: 1rem;
+      opacity: 0.8;
+      transition: opacity 0.2s;
     }
+    .btn-logout:hover {
+      opacity: 1;
+    }
+    /* Navegación (pestañas) */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 30px 30px 0 0;
+    }
+    .tab-btn.active {
+      color: var(--secondary);
+      border-bottom: 3px solid var(--secondary);
+      background: white;
+    }
+    .tab-btn:hover:not(.active) {
+      background: #f1f5f9;
+      color: var(--primary);
+    }
+    /* Tarjetas y formularios */
     .card {
       background: white;
       border-radius: 1rem;
       box-shadow: var(--shadow);
       padding: 1.8rem;
       margin-bottom: 2rem;
-      transition: all 0.2s;
     }
     .card-title {
       font-size: 1.5rem;
@@ -240,20 +279,74 @@
       flex: 1;
       min-width: 150px;
     }
+    /* Dashboard específico */
+    .dashboard-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    .kpi-panel {
+      flex: 1;
+      min-width: 250px;
+    }
+    .charts-panel {
+      flex: 2;
+      min-width: 300px;
+    }
+    .kpi-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+      border-top: 4px solid var(--secondary);
+    }
+    .kpi-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 0.5rem 0;
+    }
+    .kpi-label {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .chart-container {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 300px;
+      margin-top: 1rem;
+    }
+    .dashboard-selector {
+      margin-bottom: 1.5rem;
+      text-align: right;
+    }
     @media (max-width: 768px) {
       .app-container { padding: 1rem; }
+      .header { margin: -1rem -1rem 1rem -1rem; padding: 1rem; }
       .card { padding: 1.2rem; }
       .form-grid { grid-template-columns: 1fr; }
       .evaluation-table { font-size: 0.75rem; }
       .filter-bar { flex-direction: column; align-items: stretch; }
+      .dashboard-layout { flex-direction: column; }
     }
   </style>
 </head>
 <body>
 <div class="app-container">
+  <!-- Header con logo -->
   <div class="header">
     <div class="logo-area">
-      <i class="fas fa-chart-line logo-icon"></i>
+      <img src="logo.png" alt="Logo" id="logo-img" onerror="this.style.display='none'; this.nextSibling.style.display='inline'">
       <span class="logo-text">Gestión Operativa</span>
     </div>
     <div id="user-info" class="user-info hidden">
@@ -270,7 +363,7 @@
       <div class="form-group"><label>Correo electrónico</label><input type="email" id="login-email"></div>
       <div class="form-group"><label>Contraseña</label><input type="password" id="login-password"></div>
       <button id="login-btn" class="btn" style="width: 100%; justify-content: center;">Ingresar</button>
-      <p style="margin-top: 1.5rem; text-align: center;">¿No tienes cuenta? <a href="#" id="show-register" style="color: var(--primary);">Regístrate aquí</a></p>
+      <p style="margin-top: 1.5rem; text-align: center;">¿No tienes cuenta? <a href="#" id="show-register" style="color: var(--secondary);">Regístrate aquí</a></p>
     </div>
     <div class="card hidden" id="register-card" style="max-width: 480px; margin: 0 auto;">
       <div class="card-title">Registro de usuario</div>
@@ -285,60 +378,111 @@
 
   <!-- VISTA PRINCIPAL -->
   <div id="main-view" class="hidden">
-    <div class="flex-between" style="margin-bottom: 1.5rem;">
-      <div>
-        <button id="new-evaluation-btn" class="btn"><i class="fas fa-plus"></i> Nueva evaluación</button>
-        <button id="dashboard-btn" class="btn btn-secondary"><i class="fas fa-chart-simple"></i> Dashboard</button>
-      </div>
+    <!-- Pestañas de navegación -->
+    <div class="tabs">
+      <button class="tab-btn" data-tab="nueva">Nueva evaluación</button>
+      <button class="tab-btn" data-tab="evaluaciones">Evaluaciones</button>
+      <button class="tab-btn" data-tab="dashboard">Dashboard</button>
     </div>
 
-    <!-- Formulario nueva evaluación -->
-    <div id="new-evaluation-form" class="card hidden">
-      <div class="card-title">Registro de evaluación</div>
-      <div id="eval-error" class="alert alert-error hidden"></div>
-      <div class="form-grid">
-        <div class="form-group"><label>Empresa *</label><input type="text" id="empresa"></div>
-        <div class="form-group"><label>Fecha evaluación *</label><input type="date" id="fecha-evaluacion"></div>
-        <div class="form-group"><label>Evaluador</label><input type="text" id="evaluador" readonly></div>
-        <div class="form-group"><label>Representante organización *</label><input type="text" id="representante"></div>
-        <div class="form-group"><label>Asistentes</label><input type="text" id="asistentes"></div>
-      </div>
-      <div id="preguntas-container"></div>
-      <div class="flex-between" style="margin-top: 1.5rem;">
-        <button id="cancel-new" class="btn btn-secondary">Cancelar</button>
-        <button id="submit-evaluation" class="btn">Guardar evaluación</button>
-      </div>
-    </div>
-
-    <!-- Dashboard -->
-    <div id="dashboard-view" class="card hidden">
-      <div class="card-title">Evaluaciones realizadas</div>
-      <div class="filter-bar">
-        <div class="form-group">
-          <label>Filtrar por empresa</label>
-          <select id="filter-empresa">
-            <option value="">Todas las empresas</option>
-          </select>
+    <!-- CONTENIDO DE CADA PESTAÑA -->
+    <!-- Pestaña: Nueva evaluación -->
+    <div id="tab-nueva" class="tab-content hidden">
+      <div class="card">
+        <div class="card-title">Registro de evaluación</div>
+        <div id="eval-error" class="alert alert-error hidden"></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Empresa *</label><input type="text" id="empresa"></div>
+          <div class="form-group"><label>Fecha evaluación *</label><input type="date" id="fecha-evaluacion"></div>
+          <div class="form-group"><label>Evaluador</label><input type="text" id="evaluador" readonly></div>
+          <div class="form-group"><label>Representante organización *</label><input type="text" id="representante"></div>
+          <div class="form-group"><label>Asistentes</label><input type="text" id="asistentes"></div>
         </div>
-        <div class="form-group">
-          <label>Filtrar por evaluador</label>
-          <select id="filter-evaluador">
-            <option value="">Todos los evaluadores</option>
-          </select>
+        <div id="preguntas-container"></div>
+        <div class="flex-between" style="margin-top: 1.5rem;">
+          <button id="cancel-new" class="btn btn-secondary">Cancelar</button>
+          <button id="submit-evaluation" class="btn">Guardar evaluación</button>
         </div>
-        <button id="apply-filters" class="btn">Aplicar filtros</button>
-        <button id="reset-filters" class="btn btn-secondary">Mostrar todas</button>
       </div>
-      <div id="evaluaciones-list" style="overflow-x: auto;"></div>
     </div>
 
-    <!-- Detalle evaluación -->
-    <div id="detalle-view" class="card hidden">
-      <div class="flex-between">
-        <div class="card-title">Detalle de evaluación</div>
-        <button id="back-to-dashboard" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver</button>
+    <!-- Pestaña: Evaluaciones (lista con filtros y detalle) -->
+    <div id="tab-evaluaciones" class="tab-content hidden">
+      <div class="card">
+        <div class="card-title">Evaluaciones realizadas</div>
+        <div class="filter-bar">
+          <div class="form-group">
+            <label>Filtrar por empresa</label>
+            <select id="filter-empresa-evaluaciones">
+              <option value="">Todas las empresas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Filtrar por evaluador</label>
+            <select id="filter-evaluador-evaluaciones">
+              <option value="">Todos los evaluadores</option>
+            </select>
+          </div>
+          <button id="apply-filters-evaluaciones" class="btn">Aplicar filtros</button>
+          <button id="reset-filters-evaluaciones" class="btn btn-secondary">Mostrar todas</button>
+        </div>
+        <div id="evaluaciones-list" style="overflow-x: auto;"></div>
       </div>
-      <div id="detalle-content"></div>
+      <!-- Detalle de evaluación (aparece dentro de la misma pestaña) -->
+      <div id="detalle-evaluacion" class="card hidden">
+        <div class="flex-between">
+          <div class="card-title">Detalle de evaluación</div>
+          <button id="back-to-list" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver a la lista</button>
+        </div>
+        <div id="detalle-content"></div>
+      </div>
+    </div>
+
+    <!-- Pestaña: Dashboard (nuevo diseño) -->
+    <div id="tab-dashboard" class="tab-content hidden">
+      <div class="card">
+        <div class="card-title">Dashboard de resultados</div>
+        <div class="dashboard-selector">
+          <div class="form-group" style="width: 300px;">
+            <label>Seleccionar evaluación</label>
+            <select id="dashboard-eval-select"></select>
+          </div>
+        </div>
+
+        <div class="dashboard-layout">
+          <!-- Columna izquierda: KPIs -->
+          <div class="kpi-panel">
+            <div class="kpi-card">
+              <div class="kpi-label">Resultado General</div>
+              <div class="kpi-value" id="kpi-general">0%</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Resultado Estabilidad</div>
+              <div class="kpi-value" id="kpi-estabilidad">0%</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Resultado Mejora de Procesos</div>
+              <div class="kpi-value" id="kpi-mejora">0%</div>
+            </div>
+          </div>
+
+          <!-- Columna derecha: gráficos -->
+          <div class="charts-panel">
+            <div class="chart-container">
+              <h3 style="margin-bottom: 1rem; color: var(--primary);">Cumplimiento por Elemento</h3>
+              <div class="chart-wrapper">
+                <canvas id="radarChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-container">
+              <h3 style="margin-bottom: 1rem; color: var(--primary);">Cumplimiento por Pilar (Sí/No)</h3>
+              <div class="chart-wrapper">
+                <canvas id="stackedBarChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -350,8 +494,11 @@
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
+  let todasEvaluaciones = [];
+  let todasRespuestas = {}; // cache de detalles
+  let radarChart, stackedBarChart;
 
-  // ========== FUNCIÓN FETCH SIMPLIFICADA (sin CORS manual) ==========
+  // ========== FUNCIÓN FETCH SIMPLIFICADA ==========
   async function callGAS(action, data = {}) {
     data.action = action;
     try {
@@ -381,10 +528,22 @@
     document.getElementById('main-view').classList.remove('hidden');
     document.getElementById('user-info').classList.remove('hidden');
     document.getElementById('user-name-display').textContent = currentUser.name;
-    document.getElementById('new-evaluation-form').classList.add('hidden');
-    document.getElementById('dashboard-view').classList.remove('hidden');
-    document.getElementById('detalle-view').classList.add('hidden');
-    loadDashboard();
+    // Mostrar pestaña por defecto: Nueva evaluación
+    activarPestana('nueva');
+  }
+
+  // Control de pestañas
+  function activarPestana(tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+
+    if (tabId === 'evaluaciones') {
+      cargarEvaluaciones();
+    } else if (tabId === 'dashboard') {
+      cargarDashboard();
+    }
   }
 
   // ========== PREGUNTAS ==========
@@ -411,18 +570,18 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+        html += `<table class="evaluation-table"><thead> tr<th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
-          html += `<tr>
-                      <td>${p.num}</td>
-                      <td>${p.criterio}</td>
-                      <td><div class="radio-group">
+          html += `合乎
+                        <td>${p.num}</td>
+                        <td>${p.criterio}</td>
+                        <td><div class="radio-group">
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                    </tr>`;
+                       </tr>`;
         });
         html += `</tbody></table>`;
       }
@@ -451,7 +610,6 @@
       return;
     }
 
-    // Deshabilitar botón para evitar doble envío
     const submitBtn = document.getElementById('submit-evaluation');
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
@@ -469,9 +627,7 @@
       const porcentaje = Math.round((result.total / preguntas.length) * 100);
       alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length} (${porcentaje}%)`);
       resetForm();
-      document.getElementById('new-evaluation-form').classList.add('hidden');
-      document.getElementById('dashboard-view').classList.remove('hidden');
-      loadDashboard();
+      activarPestana('evaluaciones');
     } else {
       showEvalError(result.message);
     }
@@ -495,26 +651,24 @@
     renderPreguntasForm();
   }
 
-  // ========== DASHBOARD CON FILTROS DINÁMICOS ==========
-  let todasEvaluaciones = [];
-
-  async function loadDashboard() {
+  // ========== EVALUACIONES (LISTA CON DETALLE) ==========
+  async function cargarEvaluaciones() {
     const result = await callGAS('getEvaluaciones');
     if (result.success) {
       todasEvaluaciones = result.evaluaciones;
-      poblarFiltros(todasEvaluaciones);
-      aplicarFiltros();
+      poblarFiltrosEvaluaciones(todasEvaluaciones);
+      aplicarFiltrosEvaluaciones();
     } else {
       document.getElementById('evaluaciones-list').innerHTML = `<div class="alert alert-error">Error: ${result.message}</div>`;
     }
   }
 
-  function poblarFiltros(evaluaciones) {
+  function poblarFiltrosEvaluaciones(evaluaciones) {
     const empresas = [...new Set(evaluaciones.map(e => e.empresa).filter(e => e))];
     const evaluadores = [...new Set(evaluaciones.map(e => e.evaluador).filter(e => e))];
 
-    const empresaSelect = document.getElementById('filter-empresa');
-    const evaluadorSelect = document.getElementById('filter-evaluador');
+    const empresaSelect = document.getElementById('filter-empresa-evaluaciones');
+    const evaluadorSelect = document.getElementById('filter-evaluador-evaluaciones');
 
     empresaSelect.innerHTML = '<option value="">Todas las empresas</option>';
     empresas.forEach(emp => {
@@ -527,22 +681,14 @@
     });
   }
 
-  function aplicarFiltros() {
-    const empresaFiltro = document.getElementById('filter-empresa').value;
-    const evaluadorFiltro = document.getElementById('filter-evaluador').value;
+  function aplicarFiltrosEvaluaciones() {
+    const empresaFiltro = document.getElementById('filter-empresa-evaluaciones').value;
+    const evaluadorFiltro = document.getElementById('filter-evaluador-evaluaciones').value;
 
     let filtradas = [...todasEvaluaciones];
-
-    if (empresaFiltro) {
-      filtradas = filtradas.filter(e => e.empresa === empresaFiltro);
-    }
-    if (evaluadorFiltro) {
-      filtradas = filtradas.filter(e => e.evaluador === evaluadorFiltro);
-    }
-
-    // Ordenar por fecha descendente (la más reciente primero)
+    if (empresaFiltro) filtradas = filtradas.filter(e => e.empresa === empresaFiltro);
+    if (evaluadorFiltro) filtradas = filtradas.filter(e => e.evaluador === evaluadorFiltro);
     filtradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
     renderEvaluacionesList(filtradas);
   }
 
@@ -553,35 +699,30 @@
       return;
     }
 
-    let html = `<table class="data-table"><thead><tr>
+    let html = `<table class="data-table"><thead>
                   <th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th>
-                </tr></thead><tbody>`;
+                 </thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
       html += `<tr>
-                <td>${escapeHtml(e.empresa || '')}</td>
-                <td>${e.fecha_evaluacion || ''}</td>
-                <td>${escapeHtml(e.evaluador || '')}</td>
-                <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
-                <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${e.id}')">Ver detalle</button></td>
-               </tr>`;
+                  <td>${escapeHtml(e.empresa || '')}</td>
+                  <td>${e.fecha_evaluacion || ''}</td>
+                  <td>${escapeHtml(e.evaluador || '')}</td>
+                  <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                  <td><button class="btn btn-outline btn-sm" onclick="verDetalleEvaluacion('${e.id}')">Ver detalle</button></td>
+                </tr>`;
     });
     html += `</tbody></table>`;
     container.innerHTML = html;
   }
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
-  }
+  window.verDetalleEvaluacion = async function(id) {
+    // Ocultar lista y mostrar detalle
+    document.getElementById('evaluaciones-list').classList.add('hidden');
+    document.getElementById('detalle-evaluacion').classList.remove('hidden');
+    document.querySelector('.filter-bar').classList.add('hidden');
 
-  window.verDetalle = async function(id) {
     const result = await callGAS('getEvaluacionDetalle', { id });
     if (result.success) {
       const evaluacion = result.evaluacion;
@@ -605,7 +746,7 @@
         html += `<div class="section-title">${pilar}</div>`;
         for (const elemento in grouped[pilar]) {
           html += `<div class="sub-section">${elemento}</div>`;
-          html += `<table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+          html += `<table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
           grouped[pilar][elemento].forEach(p => {
             const resp = respMap[p.num] === 'Sí' ? '✓ Sí' : '✗ No';
             html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td>${resp}</td></tr>`;
@@ -614,14 +755,192 @@
         }
       }
       document.getElementById('detalle-content').innerHTML = html;
-      document.getElementById('dashboard-view').classList.add('hidden');
-      document.getElementById('detalle-view').classList.remove('hidden');
     } else {
       alert("Error al obtener detalle: " + result.message);
     }
   };
 
-  // ========== EVENTOS ==========
+  document.getElementById('back-to-list').onclick = () => {
+    document.getElementById('evaluaciones-list').classList.remove('hidden');
+    document.getElementById('detalle-evaluacion').classList.add('hidden');
+    document.querySelector('.filter-bar').classList.remove('hidden');
+  };
+
+  // ========== DASHBOARD ==========
+  async function cargarDashboard() {
+    // Obtener todas las evaluaciones para poblar el selector
+    const result = await callGAS('getEvaluaciones');
+    if (!result.success) {
+      alert("Error al cargar datos para dashboard");
+      return;
+    }
+    todasEvaluaciones = result.evaluaciones;
+    const select = document.getElementById('dashboard-eval-select');
+    select.innerHTML = '<option value="">-- Selecciona una evaluación --</option>';
+    todasEvaluaciones.forEach(evalItem => {
+      const fecha = evalItem.fecha_evaluacion || '';
+      const empresa = evalItem.empresa || '';
+      select.innerHTML += `<option value="${evalItem.id}">${empresa} - ${fecha} (${evalItem.evaluador})</option>`;
+    });
+
+    // Si hay al menos una evaluación, seleccionar la más reciente por defecto
+    if (todasEvaluaciones.length) {
+      const masReciente = todasEvaluaciones.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+      select.value = masReciente.id;
+      cargarDashboardParaEvaluacion(masReciente.id);
+    } else {
+      mostrarDashboardVacio();
+    }
+
+    select.onchange = () => {
+      if (select.value) {
+        cargarDashboardParaEvaluacion(select.value);
+      } else {
+        mostrarDashboardVacio();
+      }
+    };
+  }
+
+  async function cargarDashboardParaEvaluacion(evalId) {
+    const detalle = await callGAS('getEvaluacionDetalle', { id: evalId });
+    if (!detalle.success) {
+      alert("Error al cargar detalle de evaluación");
+      return;
+    }
+    const respuestas = detalle.respuestas;
+    const respMap = {};
+    respuestas.forEach(r => respMap[r.num] = r.respuesta);
+
+    const totalPreguntas = preguntas.length;
+    const totalSi = respuestas.filter(r => r.respuesta === 'Sí').length;
+    const porcentajeGeneral = Math.round((totalSi / totalPreguntas) * 100);
+    document.getElementById('kpi-general').innerText = `${porcentajeGeneral}%`;
+
+    // Agrupar por elemento y pilar
+    const porElemento = {};
+    const porPilar = {};
+    preguntas.forEach(p => {
+      const respuesta = respMap[p.num] === 'Sí';
+      if (!porElemento[p.elemento]) porElemento[p.elemento] = { total: 0, cumplidas: 0 };
+      porElemento[p.elemento].total++;
+      if (respuesta) porElemento[p.elemento].cumplidas++;
+
+      if (!porPilar[p.pilar]) porPilar[p.pilar] = { total: 0, cumplidas: 0 };
+      porPilar[p.pilar].total++;
+      if (respuesta) porPilar[p.pilar].cumplidas++;
+    });
+
+    // Calcular KPIs de Estabilidad y Mejora de procesos
+    const grupos = {
+      Estabilidad: ['Estructura de equipos', 'Trabajo estandarizado', '5S'],
+      MejoraProcesos: ['Indicadores', 'Solución de problemas', 'Mejora continua', 'Gestión visual', 'Escalonamiento e interacciones']
+    };
+    let estabilidadTotal = 0, estabilidadCumple = 0;
+    let mejoraTotal = 0, mejoraCumple = 0;
+    for (const [elemento, stats] of Object.entries(porElemento)) {
+      if (grupos.Estabilidad.includes(elemento)) {
+        estabilidadTotal += stats.total;
+        estabilidadCumple += stats.cumplidas;
+      }
+      if (grupos.MejoraProcesos.includes(elemento)) {
+        mejoraTotal += stats.total;
+        mejoraCumple += stats.cumplidas;
+      }
+    }
+    const porcEstabilidad = estabilidadTotal ? Math.round((estabilidadCumple / estabilidadTotal) * 100) : 0;
+    const porcMejora = mejoraTotal ? Math.round((mejoraCumple / mejoraTotal) * 100) : 0;
+    document.getElementById('kpi-estabilidad').innerText = `${porcEstabilidad}%`;
+    document.getElementById('kpi-mejora').innerText = `${porcMejora}%`;
+
+    // Radar chart: porcentaje por elemento
+    const elementos = Object.keys(porElemento);
+    const valoresRadar = elementos.map(e => Math.round((porElemento[e].cumplidas / porElemento[e].total) * 100));
+    if (radarChart) radarChart.destroy();
+    const ctxRadar = document.getElementById('radarChart').getContext('2d');
+    radarChart = new Chart(ctxRadar, {
+      type: 'radar',
+      data: {
+        labels: elementos,
+        datasets: [{
+          label: '% Cumplimiento',
+          data: valoresRadar,
+          backgroundColor: 'rgba(31, 58, 138, 0.2)',
+          borderColor: '#1e3a8a',
+          borderWidth: 2,
+          pointBackgroundColor: '#f97316',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#f97316'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { stepSize: 20, callback: (val) => val + '%' }
+          }
+        }
+      }
+    });
+
+    // Gráfico de barras apiladas: por pilar, conteo de Sí/No
+    const pilares = Object.keys(porPilar);
+    const siCounts = pilares.map(p => porPilar[p].cumplidas);
+    const noCounts = pilares.map(p => porPilar[p].total - porPilar[p].cumplidas);
+
+    if (stackedBarChart) stackedBarChart.destroy();
+    const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
+    stackedBarChart = new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels: pilares,
+        datasets: [
+          {
+            label: 'Sí',
+            data: siCounts,
+            backgroundColor: '#1e3a8a',
+            borderRadius: 4
+          },
+          {
+            label: 'No',
+            data: noCounts,
+            backgroundColor: '#f97316',
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Cantidad de respuestas' } }
+        },
+        plugins: {
+          tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}` } },
+          legend: { position: 'top' }
+        }
+      }
+    });
+  }
+
+  function mostrarDashboardVacio() {
+    document.getElementById('kpi-general').innerText = '0%';
+    document.getElementById('kpi-estabilidad').innerText = '0%';
+    document.getElementById('kpi-mejora').innerText = '0%';
+    if (radarChart) radarChart.destroy();
+    if (stackedBarChart) stackedBarChart.destroy();
+    // Inicializar gráficos vacíos
+    const ctxRadar = document.getElementById('radarChart').getContext('2d');
+    radarChart = new Chart(ctxRadar, { type: 'radar', data: { labels: [], datasets: [] }, options: { responsive: true } });
+    const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
+    stackedBarChart = new Chart(ctxBar, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true } });
+  }
+
+  // ========== EVENTOS GLOBALES ==========
   document.getElementById('login-btn').onclick = async () => {
     const username = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
@@ -664,38 +983,26 @@
     }
   };
   document.getElementById('logout-btn').onclick = () => showLogin();
-  document.getElementById('new-evaluation-btn').onclick = () => {
-    document.getElementById('new-evaluation-form').classList.remove('hidden');
-    document.getElementById('dashboard-view').classList.add('hidden');
-    document.getElementById('detalle-view').classList.add('hidden');
-    document.getElementById('evaluador').value = currentUser.name; // ← Nombre completo
-    document.getElementById('fecha-evaluacion').valueAsDate = new Date();
-    respuestasSeleccionadas = {};
-    renderPreguntasForm();
-  };
-  document.getElementById('dashboard-btn').onclick = () => {
-    document.getElementById('new-evaluation-form').classList.add('hidden');
-    document.getElementById('dashboard-view').classList.remove('hidden');
-    document.getElementById('detalle-view').classList.add('hidden');
-    loadDashboard();
-  };
-  document.getElementById('apply-filters').onclick = () => aplicarFiltros();
-  document.getElementById('reset-filters').onclick = () => {
-    document.getElementById('filter-empresa').value = '';
-    document.getElementById('filter-evaluador').value = '';
-    aplicarFiltros();
-  };
-  document.getElementById('back-to-dashboard').onclick = () => {
-    document.getElementById('detalle-view').classList.add('hidden');
-    document.getElementById('dashboard-view').classList.remove('hidden');
-    loadDashboard();
-  };
+  document.getElementById('new-evaluation-btn').onclick = () => activarPestana('nueva');
+  document.getElementById('dashboard-btn').onclick = () => activarPestana('dashboard');
   document.getElementById('submit-evaluation').onclick = submitEvaluation;
-  document.getElementById('cancel-new').onclick = () => {
-    document.getElementById('new-evaluation-form').classList.add('hidden');
-    document.getElementById('dashboard-view').classList.remove('hidden');
+  document.getElementById('cancel-new').onclick = () => activarPestana('evaluaciones');
+  document.getElementById('apply-filters-evaluaciones').onclick = () => aplicarFiltrosEvaluaciones();
+  document.getElementById('reset-filters-evaluaciones').onclick = () => {
+    document.getElementById('filter-empresa-evaluaciones').value = '';
+    document.getElementById('filter-evaluador-evaluaciones').value = '';
+    aplicarFiltrosEvaluaciones();
   };
 
+  // Eventos de pestañas
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+      activarPestana(tab);
+    });
+  });
+
+  // Inicialización
   showLogin();
 </script>
 </body>
