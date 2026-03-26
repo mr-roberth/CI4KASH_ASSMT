@@ -32,9 +32,9 @@
       margin: 0 auto;
       padding: 2rem 1.5rem;
     }
-    /* Header */
+    /* Header con degradado azul a plateado */
     .header {
-      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      background: linear-gradient(135deg, #0f2b5e 0%, #3b4d7a 100%);
       border-radius: 1rem 1rem 0 0;
       margin: -2rem -1.5rem 2rem -1.5rem;
       padding: 1.5rem 2rem;
@@ -221,7 +221,7 @@
     }
     .detail-row.show { display: table-row; }
     .detail-row td { padding: 1rem; background: #f8fafc; }
-    /* Detalle de preguntas en dashboard (tabla colapsable) */
+    /* Detalle de preguntas en dashboard (tabla colapsable con cabeceras estilizadas) */
     .question-detail {
       margin-top: 2rem;
       border-top: 2px solid var(--border);
@@ -234,7 +234,8 @@
       overflow: hidden;
     }
     .element-header {
-      background: #f1f5f9;
+      background: var(--primary);
+      color: white;
       padding: 12px 16px;
       cursor: pointer;
       font-weight: 600;
@@ -244,10 +245,11 @@
       transition: background 0.2s;
     }
     .element-header:hover {
-      background: #e2e8f0;
+      background: var(--primary-dark);
     }
     .element-header i {
       transition: transform 0.2s;
+      color: var(--secondary);
     }
     .element-header.collapsed i {
       transform: rotate(-90deg);
@@ -263,14 +265,15 @@
       width: 100%;
       border-collapse: collapse;
     }
-    .element-questions th, .element-questions td {
+    .element-questions th {
+      background: #f1f5f9;
+      font-weight: 600;
+      padding: 10px;
+      border: 1px solid var(--border);
+    }
+    .element-questions td {
       border: 1px solid var(--border);
       padding: 8px 12px;
-      text-align: left;
-    }
-    .element-questions th {
-      background: #f8fafc;
-      font-weight: 600;
     }
     .answer-yes {
       color: #1e3a8a;
@@ -298,6 +301,7 @@
         page-break-inside: avoid;
         break-inside: avoid;
         height: auto;
+        margin-bottom: 0;
       }
       .chart-wrapper {
         height: 280px;
@@ -328,7 +332,7 @@
 <div class="app-container">
   <div class="header">
     <div class="logo-area">
-      <img src="logo.png" alt="Logo" id="logo-img" onerror="this.style.display='none'; this.nextSibling.style.display='inline'">
+      <img src="logo_c4.png" alt="Logo" id="logo-img" onerror="this.style.display='none'; this.nextSibling.style.display='inline'">
       <span class="logo-text">Gestión Operativa</span>
     </div>
     <div id="user-info" class="user-info hidden">
@@ -340,6 +344,9 @@
   <!-- VISTA LOGIN -->
   <div id="login-view">
     <div class="card" style="max-width: 480px; margin: 2rem auto;">
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <img src="logo_c4.png" alt="Logo" style="height: 60px;" onerror="this.style.display='none'">
+      </div>
       <div class="card-title">Acceso al sistema</div>
       <div id="login-error" class="alert alert-error hidden"></div>
       <div class="form-group"><label>Correo electrónico</label><input type="email" id="login-email"></div>
@@ -386,7 +393,7 @@
       </div>
     </div>
 
-    <!-- Pestaña Evaluaciones -->
+    <!-- Pestaña Evaluaciones (nueva lógica rápida) -->
     <div id="tab-evaluaciones" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Evaluaciones realizadas</div>
@@ -446,15 +453,13 @@
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
-  let todasEvaluaciones = [];       // almacenamos en memoria
+  let todasEvaluaciones = [];
   let radarChart = null;
   let horizontalBarChart = null;
 
-  // Cache de preguntas en localStorage (duran 1 día)
   const PREGUNTAS_CACHE_KEY = "gestion_operativa_preguntas";
-  const PREGUNTAS_CACHE_TIME = 24 * 60 * 60 * 1000; // 24h
+  const PREGUNTAS_CACHE_TIME = 24 * 60 * 60 * 1000;
 
-  // ========== FUNCIÓN FETCH SIMPLIFICADA ==========
   async function callGAS(action, data = {}) {
     data.action = action;
     try {
@@ -467,7 +472,7 @@
     }
   }
 
-  // ========== UI AUXILIARES ==========
+  // ========== UI ==========
   function showLogin() {
     document.getElementById('login-view').classList.remove('hidden');
     document.getElementById('main-view').classList.add('hidden');
@@ -484,7 +489,6 @@
     activarPestana('nueva');
   }
 
-  // Control de pestañas
   function activarPestana(tabId) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
     document.getElementById(`tab-${tabId}`).classList.remove('hidden');
@@ -492,15 +496,10 @@
     document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
 
     if (tabId === 'nueva') {
-      // Llenar campo evaluador y fecha
       const evaluadorField = document.getElementById('evaluador');
-      if (evaluadorField && currentUser) {
-        evaluadorField.value = currentUser.name;
-      }
+      if (evaluadorField && currentUser) evaluadorField.value = currentUser.name;
       const fechaField = document.getElementById('fecha-evaluacion');
-      if (fechaField && !fechaField.value) {
-        fechaField.valueAsDate = new Date();
-      }
+      if (fechaField && !fechaField.value) fechaField.valueAsDate = new Date();
     } else if (tabId === 'evaluaciones') {
       cargarEvaluaciones();
     } else if (tabId === 'dashboard') {
@@ -508,9 +507,8 @@
     }
   }
 
-  // ========== PREGUNTAS (con cache) ==========
+  // ========== PREGUNTAS ==========
   async function loadPreguntas() {
-    // Intentar leer del cache
     const cached = localStorage.getItem(PREGUNTAS_CACHE_KEY);
     if (cached) {
       try {
@@ -522,11 +520,9 @@
         }
       } catch(e) {}
     }
-
     const result = await callGAS('getPreguntas');
     if (result.success) {
       preguntas = result.preguntas;
-      // Guardar en cache
       localStorage.setItem(PREGUNTAS_CACHE_KEY, JSON.stringify({ preguntas, timestamp: Date.now() }));
       renderPreguntasForm();
       return true;
@@ -550,7 +546,7 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+        html += `<table class="evaluation-table"><thead> <th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
@@ -577,7 +573,6 @@
     });
   }
 
-  // ========== ENVÍO DE EVALUACIÓN ==========
   async function submitEvaluation() {
     const empresa = document.getElementById('empresa').value.trim();
     const fecha = document.getElementById('fecha-evaluacion').value;
@@ -625,25 +620,19 @@
     renderPreguntasForm();
   }
 
-  // ========== EVALUACIONES (LISTA CON DETALLE EXPANDIBLE) ==========
-  let esperandoPreguntas = false;
-
+  // ========== EVALUACIONES (rápida) ==========
   async function cargarEvaluaciones() {
     const container = document.getElementById('evaluaciones-list-container');
     container.innerHTML = '<div class="loader"></div> Cargando evaluaciones...';
 
-    // Esperar a que las preguntas estén cargadas
+    // Esperar preguntas si no están listas
     if (preguntas.length === 0) {
-      if (!esperandoPreguntas) {
-        esperandoPreguntas = true;
-        const checkInterval = setInterval(() => {
-          if (preguntas.length > 0) {
-            clearInterval(checkInterval);
-            esperandoPreguntas = false;
-            cargarEvaluaciones(); // reintentar
-          }
-        }, 500);
-      }
+      const checkInterval = setInterval(() => {
+        if (preguntas.length > 0) {
+          clearInterval(checkInterval);
+          cargarEvaluaciones();
+        }
+      }, 500);
       return;
     }
 
@@ -685,7 +674,7 @@
       return;
     }
     let html = `<table class="data-table" style="width:100%"><thead>
-                  <tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th></tr>
+                   <th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th>
                   </thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
@@ -711,7 +700,7 @@
     }
     detailRow.classList.add('show');
     const contentDiv = document.getElementById(`detail-content-${id}`);
-    if (!contentDiv.innerHTML.includes('Cargando detalle')) return; // ya cargado
+    if (!contentDiv.innerHTML.includes('Cargando detalle')) return;
 
     const result = await callGAS('getEvaluacionDetalle', { id });
     if (result.success) {
@@ -734,15 +723,11 @@
       for (const pilar in grouped) {
         html += `<div class="section-title">${pilar}</div>`;
         for (const elemento in grouped[pilar]) {
-          html += `<div class="sub-section">${elemento}</div><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+          html += `<div class="sub-section">${elemento}</div><table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
           grouped[pilar][elemento].forEach(p => {
             const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
             const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
-            html += `<tr>
-                        <td>${p.num}</td>
-                        <td>${p.criterio}</td>
-                        <td class="${respClass}">${resp}</td>
-                      </tr>`;
+            html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
           });
           html += `</tbody></table>`;
         }
@@ -784,13 +769,11 @@
     const respMap = {};
     respuestas.forEach(r => respMap[r.num] = r.respuesta);
 
-    // KPIs
     const totalPreguntas = preguntas.length;
     const totalSi = respuestas.filter(r => r.respuesta === 'Sí').length;
     const porcentajeGeneral = Math.round((totalSi / totalPreguntas) * 100);
     document.getElementById('kpi-general').innerText = `${porcentajeGeneral}%`;
 
-    // Por elementos y pilares
     const porElemento = {}, porPilar = {};
     preguntas.forEach(p => {
       const respuesta = respMap[p.num] === 'Sí';
@@ -802,7 +785,6 @@
       if (respuesta) porPilar[p.pilar].cumplidas++;
     });
 
-    // Cálculo de estabilidad y mejora
     const grupos = {
       Estabilidad: ['Estructura de equipos', 'Trabajo estandarizado', '5S'],
       MejoraProcesos: ['Indicadores', 'Solución de problemas', 'Mejora continua', 'Gestión visual', 'Escalonamiento e interacciones']
@@ -818,7 +800,6 @@
     document.getElementById('kpi-estabilidad').innerText = `${porcEstabilidad}%`;
     document.getElementById('kpi-mejora').innerText = `${porcMejora}%`;
 
-    // Radar chart: elementos
     const elementos = Object.keys(porElemento);
     const valoresRadar = elementos.map(e => Math.round((porElemento[e].cumplidas / porElemento[e].total) * 100));
     if (radarChart) radarChart.destroy();
@@ -829,11 +810,9 @@
       options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: (val) => val + '%' } } } }
     });
 
-    // Gráfico de barras horizontales apiladas (solo elementos)
     const elementosOrdenados = Object.keys(porElemento);
     const siCounts = elementosOrdenados.map(e => porElemento[e].cumplidas);
     const noCounts = elementosOrdenados.map(e => porElemento[e].total - porElemento[e].cumplidas);
-
     if (horizontalBarChart) horizontalBarChart.destroy();
     const ctxBar = document.getElementById('horizontalBarChart').getContext('2d');
     horizontalBarChart = new Chart(ctxBar, {
@@ -846,21 +825,14 @@
         ]
       },
       options: {
-        indexAxis: 'y', // horizontal
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-          x: { stacked: true, title: { display: true, text: 'Cantidad de respuestas' } },
-          y: { stacked: true }
-        },
-        plugins: {
-          tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}` } },
-          legend: { position: 'top' }
-        }
+        scales: { x: { stacked: true, title: { display: true, text: 'Cantidad de respuestas' } }, y: { stacked: true } },
+        plugins: { tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}` } }, legend: { position: 'top' } }
       }
     });
 
-    // Generar detalle de preguntas (tabla colapsable por elemento)
     generarDetallePreguntas(respMap);
   }
 
@@ -881,17 +853,12 @@
                 <div class="element-questions">
                   <table>
                     <thead>
-                      <tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr>
-                    </thead>
+                      <tr><th>No.</th><th>Criterio</th><th>Respuesta</th> </thead>
                     <tbody>`;
       grouped[elemento].forEach(p => {
         const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
         const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
-        html += `<tr>
-                    <td>${p.num}</td>
-                    <td>${p.criterio}</td>
-                    <td class="${respClass}">${resp}</td>
-                  </tr>`;
+        html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
       });
       html += `</tbody></table></div></div>`;
     }
@@ -904,11 +871,8 @@
     content.classList.toggle('collapsed');
     icon.classList.toggle('fa-chevron-down');
     icon.classList.toggle('fa-chevron-right');
-    if (content.classList.contains('collapsed')) {
-      header.classList.add('collapsed');
-    } else {
-      header.classList.remove('collapsed');
-    }
+    if (content.classList.contains('collapsed')) header.classList.add('collapsed');
+    else header.classList.remove('collapsed');
   };
 
   function mostrarDashboardVacio() {
@@ -974,6 +938,16 @@
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => activarPestana(btn.getAttribute('data-tab')));
   });
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
 
   showLogin();
 </script>
