@@ -1095,66 +1095,89 @@
     const margin = 10;
     let y = margin;
 
-    // Función para agregar nueva página si es necesario
+    // Obtener logo en dataURL
+    const logoImg = document.getElementById('logo-img');
+    let logoDataUrl = null;
+    if (logoImg && logoImg.src && !logoImg.src.includes('onerror')) {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = logoImg.naturalWidth;
+        canvas.height = logoImg.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(logoImg, 0, 0);
+        logoDataUrl = canvas.toDataURL('image/png');
+      } catch(e) { console.warn("No se pudo cargar el logo"); }
+    }
+
+    // Función para agregar nueva página
     function addNewPageIfNeeded(additionalHeight) {
       if (y + additionalHeight > pdf.internal.pageSize.getHeight() - margin) {
         pdf.addPage();
         y = margin;
+        if (logoDataUrl) {
+          pdf.addImage(logoDataUrl, 'PNG', margin, y, 25, 25);
+          y += 30;
+        }
       }
     }
 
-    // --- Página 1: Tabla resumen + gráficos horizontales ---
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y, { align: 'center' });
-    y += 10;
+    // Encabezado con logo y título
+    if (logoDataUrl) {
+      pdf.addImage(logoDataUrl, 'PNG', margin, y, 25, 25);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y + 12, { align: 'center' });
+      y += 30;
+    } else {
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y, { align: 'center' });
+      y += 10;
+    }
 
-    // Tabla resumen de la empresa y resultados
-    const summaryData = [
-      ['Empresa', data.empresa],
-      ['Fecha de evaluación', data.fecha],
-      ['Evaluador', data.evaluador],
-      ['Representante', data.representante],
-      ['Asistentes', data.asistentes || 'Ninguno'],
-      ['Resultado General', `${data.porcGeneral}%`],
-      ['Resultado Estabilidad', `${data.porcEstabilidad}%`],
-      ['Resultado Mejora de Procesos', `${data.porcMejora}%`]
+    // Tabla resumen con iconos y bordes
+    const summaryRows = [
+      ['🏢 Empresa', data.empresa],
+      ['📅 Fecha de evaluación', data.fecha],
+      ['👤 Evaluador', data.evaluador],
+      ['👥 Representante', data.representante],
+      ['📋 Asistentes', data.asistentes || 'Ninguno'],
+      ['📊 Resultado General', `${data.porcGeneral}%`],
+      ['⚙️ Resultado Estabilidad', `${data.porcEstabilidad}%`],
+      ['🔄 Resultado Mejora de Procesos', `${data.porcMejora}%`]
     ];
 
     pdf.autoTable({
       startY: y,
-      body: summaryData,
-      theme: 'striped',
-      styles: { fontSize: 9, cellPadding: 3 },
+      body: summaryRows,
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 4, lineColor: [100,100,100], lineWidth: 0.2 },
       headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
-      columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 100 } },
+      columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' }, 1: { cellWidth: 100 } },
       margin: { left: margin, right: margin }
     });
     y = pdf.lastAutoTable.finalY + 8;
 
-    // Capturar gráficos como imágenes
+    // Capturar gráficos
     const radarCanvas = document.getElementById('radarChart');
     const barCanvas = document.getElementById('horizontalBarChart');
     if (radarCanvas && barCanvas) {
       const radarImg = radarCanvas.toDataURL('image/png');
       const barImg = barCanvas.toDataURL('image/png');
-      const imgWidth = 85;
-      const imgHeight = 85;
-      // Calcular espacio disponible en la página
-      addNewPageIfNeeded(imgHeight + 20);
-      // Posicionar gráficos uno al lado del otro
-      pdf.addImage(radarImg, 'PNG', margin, y, imgWidth, imgHeight);
-      pdf.addImage(barImg, 'PNG', pageWidth - margin - imgWidth, y, imgWidth, imgHeight);
+      const imgWidth = 70; // mm
+      const imgHeight = 70; // mm (ajustar proporción)
+      const centerX = (pageWidth - (imgWidth * 2 + 10)) / 2;
+      addNewPageIfNeeded(imgHeight + 15);
+      pdf.addImage(radarImg, 'PNG', centerX, y, imgWidth, imgHeight);
+      pdf.addImage(barImg, 'PNG', centerX + imgWidth + 10, y, imgWidth, imgHeight);
       y += imgHeight + 5;
-      // Etiquetas debajo de cada gráfico
       pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Cumplimiento por Elemento', margin + imgWidth/2, y, { align: 'center' });
-      pdf.text('Cumplimiento por Elemento (Sí/No)', pageWidth - margin - imgWidth/2, y, { align: 'center' });
+      pdf.text('Cumplimiento por Elemento', centerX + imgWidth/2, y, { align: 'center' });
+      pdf.text('Cumplimiento por Elemento (Sí/No)', centerX + imgWidth + 10 + imgWidth/2, y, { align: 'center' });
       y += 10;
     }
 
-    // --- Páginas siguientes: Preguntas agrupadas por elemento ---
+    // --- Preguntas agrupadas por elemento ---
     const preguntasPorElemento = {};
     preguntas.forEach(p => {
       if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = [];
@@ -1162,31 +1185,30 @@
     });
 
     for (const elemento in preguntasPorElemento) {
-      addNewPageIfNeeded(15);
+      addNewPageIfNeeded(20);
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(11);
       pdf.text(elemento, margin, y);
       y += 6;
-      pdf.setFontSize(8);
       const tableData = preguntasPorElemento[elemento].map(p => [p.num, p.criterio, data.respMap[p.num] === 'Sí' ? 'Sí' : 'No']);
       const tableHeaders = ['No.', 'Criterio', 'Respuesta'];
-      const estimatedHeight = (tableData.length + 1) * 5;
+      const estimatedHeight = (tableData.length + 1) * 6;
       addNewPageIfNeeded(estimatedHeight + 5);
       pdf.autoTable({
         startY: y,
         head: [tableHeaders],
         body: tableData,
         theme: 'striped',
-        styles: { fontSize: 8, cellPadding: 2, lineColor: [200,200,200], lineWidth: 0.1 },
+        styles: { fontSize: 8, cellPadding: 2, lineColor: [150,150,150], lineWidth: 0.1 },
         headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
         columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 120 }, 2: { cellWidth: 25 } },
         margin: { left: margin, right: margin }
       });
-      y = pdf.lastAutoTable.finalY + 3;
+      y = pdf.lastAutoTable.finalY + 5;
     }
 
-    // --- Firmas al final de la última página (no en página aparte) ---
-    addNewPageIfNeeded(20);
+    // --- Firmas al final ---
+    addNewPageIfNeeded(30);
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
     pdf.text('_______________________________', margin, y);
