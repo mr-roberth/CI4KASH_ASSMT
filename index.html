@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <style>
@@ -23,11 +22,7 @@
       --text-light: #4b5563;
       --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--light-bg);
@@ -45,7 +40,7 @@
       background: linear-gradient(135deg, #0f2b5e 0%, #3b4d7a 100%);
       border-radius: 1rem 1rem 0 0;
       margin: -1rem -1rem 1rem -1rem;
-      padding: 1rem 1.5rem;
+      padding: 0.8rem 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -81,7 +76,7 @@
       font-size: 0.85rem;
       color: white;
     }
-    .btn-logout {
+    .btn-logout, .btn-sync {
       background: none;
       border: none;
       color: white;
@@ -89,8 +84,9 @@
       font-size: 0.9rem;
       opacity: 0.8;
       transition: opacity 0.2s;
+      margin-left: 0.5rem;
     }
-    .btn-logout:hover { opacity: 1; }
+    .btn-logout:hover, .btn-sync:hover { opacity: 1; }
     /* Pestañas */
     .tabs {
       display: flex;
@@ -148,8 +144,7 @@
       font-size: 0.8rem;
       color: var(--text-light);
     }
-    .form-group input,
-    .form-group select {
+    .form-group input, .form-group select {
       width: 100%;
       padding: 0.6rem 0.8rem;
       border: 1px solid var(--border);
@@ -273,8 +268,7 @@
       margin-top: 1rem;
       font-size: 0.8rem;
     }
-    table.data-table th,
-    table.data-table td {
+    table.data-table th, table.data-table td {
       border: 1px solid var(--border);
       padding: 8px;
       text-align: left;
@@ -442,63 +436,24 @@
       color: #f97316;
       font-weight: 600;
     }
-    /* Estilos responsivos adicionales */
+    /* Estilos responsivos */
     @media (max-width: 768px) {
-      .app-container {
-        padding: 0.8rem;
-      }
-      .header {
-        padding: 0.8rem 1rem;
-      }
-      .logo-text {
-        font-size: 1rem;
-      }
-      .card {
-        padding: 1rem;
-      }
-      .card-title {
-        font-size: 1.2rem;
-      }
-      .form-grid {
-        grid-template-columns: 1fr;
-        gap: 0.8rem;
-      }
-      .evaluation-table {
-        min-width: 450px;
-      }
-      .filter-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .dashboard-row {
-        flex-direction: column;
-      }
-      .kpi-block {
-        flex-direction: row;
-        flex-wrap: wrap;
-      }
-      .kpi-card {
-        flex: 1;
-        min-width: 120px;
-      }
-      .chart-container {
-        min-width: auto;
-      }
-      .chart-wrapper {
-        height: 220px;
-      }
-      .tab-btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-      }
-      .btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.8rem;
-      }
-      .element-header {
-        padding: 8px 10px;
-        font-size: 0.85rem;
-      }
+      .app-container { padding: 0.8rem; }
+      .header { padding: 0.8rem 1rem; }
+      .logo-text { font-size: 1rem; }
+      .card { padding: 1rem; }
+      .card-title { font-size: 1.2rem; }
+      .form-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+      .evaluation-table { min-width: 450px; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .dashboard-row { flex-direction: column; }
+      .kpi-block { flex-direction: row; flex-wrap: wrap; }
+      .kpi-card { flex: 1; min-width: 120px; }
+      .chart-container { min-width: auto; }
+      .chart-wrapper { height: 220px; }
+      .tab-btn { padding: 0.5rem 1rem; font-size: 0.85rem; }
+      .btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
+      .element-header { padding: 8px 10px; font-size: 0.85rem; }
     }
   </style>
 </head>
@@ -511,6 +466,7 @@
     </div>
     <div id="user-info" class="user-info hidden">
       <span class="user-name" id="user-name-display"></span>
+      <button id="sync-btn" class="btn-sync"><i class="fas fa-sync-alt"></i></button>
       <button id="logout-btn" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </div>
@@ -623,17 +579,197 @@
 <script>
   // ==================== CONFIGURACIÓN ====================
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyxICilStWld6uZjecBT3cLmM176XEdVyz5QJQs52h0PYN6Ar_V89Gtla78dsQDuvu1bg/exec"; // ← REEMPLAZAR
+  const DB_NAME = "GestionOperativaDB";
+  const DB_VERSION = 1;
 
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
-  let todasEvaluaciones = [];
+  let todasEvaluaciones = [];     // Evaluaciones combinadas (locales + cloud)
   let radarChart = null;
   let horizontalBarChart = null;
 
-  const PREGUNTAS_CACHE_KEY = "gestion_operativa_preguntas";
-  const PREGUNTAS_CACHE_TIME = 24 * 60 * 60 * 1000;
+  // ==================== INDEXEDDB ====================
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('preguntas')) {
+          db.createObjectStore('preguntas', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('evaluaciones')) {
+          const store = db.createObjectStore('evaluaciones', { keyPath: 'id' });
+          store.createIndex('sync_status', 'sync_status');
+        }
+        if (!db.objectStoreNames.contains('config')) {
+          db.createObjectStore('config', { keyPath: 'key' });
+        }
+      };
+    });
+  }
 
+  async function savePreguntas(pregs) {
+    const db = await openDB();
+    const tx = db.transaction('preguntas', 'readwrite');
+    const store = tx.objectStore('preguntas');
+    store.put({ id: 'preguntas', data: pregs });
+    await tx.done;
+  }
+
+  async function loadPreguntasFromDB() {
+    const db = await openDB();
+    const store = db.transaction('preguntas').objectStore('preguntas');
+    const record = await store.get('preguntas');
+    return record ? record.data : null;
+  }
+
+  async function saveEvaluacionLocal(evalObj) {
+    const db = await openDB();
+    const tx = db.transaction('evaluaciones', 'readwrite');
+    const store = tx.objectStore('evaluaciones');
+    store.put(evalObj);
+    await tx.done;
+  }
+
+  async function getEvaluacionesLocales() {
+    const db = await openDB();
+    const store = db.transaction('evaluaciones').objectStore('evaluaciones');
+    return await store.getAll();
+  }
+
+  async function updateEvaluacionSyncStatus(id, status, error = null) {
+    const db = await openDB();
+    const tx = db.transaction('evaluaciones', 'readwrite');
+    const store = tx.objectStore('evaluaciones');
+    const evalObj = await store.get(id);
+    if (evalObj) {
+      evalObj.sync_status = status;
+      if (error) evalObj.sync_error = error;
+      store.put(evalObj);
+    }
+    await tx.done;
+  }
+
+  async function deleteEvaluacionLocal(id) {
+    const db = await openDB();
+    const tx = db.transaction('evaluaciones', 'readwrite');
+    const store = tx.objectStore('evaluaciones');
+    store.delete(id);
+    await tx.done;
+  }
+
+  // ==================== AUTENTICACIÓN CON PERSISTENCIA ====================
+  async function login(username, password) {
+    const result = await callGAS('login', { username, password });
+    if (result.success) {
+      currentUser = result.user;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      // Cargar preguntas desde caché o descargar
+      let cached = await loadPreguntasFromDB();
+      if (cached && cached.length) {
+        preguntas = cached;
+        renderPreguntasForm();
+      } else {
+        await downloadAndCachePreguntas();
+      }
+      showMain();
+    }
+    return result;
+  }
+
+  async function downloadAndCachePreguntas() {
+    const result = await callGAS('getPreguntas');
+    if (result.success) {
+      preguntas = result.preguntas;
+      await savePreguntas(preguntas);
+      renderPreguntasForm();
+    } else {
+      alert("Error al cargar preguntas: " + result.message);
+    }
+  }
+
+  function restoreSession() {
+    const stored = localStorage.getItem('currentUser');
+    if (stored) {
+      currentUser = JSON.parse(stored);
+      showMain();
+      return true;
+    }
+    return false;
+  }
+
+  function logout() {
+    localStorage.removeItem('currentUser');
+    showLogin();
+  }
+
+  // ==================== SINCRONIZACIÓN ====================
+  async function syncData() {
+    if (!navigator.onLine) {
+      alert("No hay conexión a internet. Conéctate para sincronizar.");
+      return;
+    }
+    const btn = document.getElementById('sync-btn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+      // 1. Enviar evaluaciones pendientes
+      const locales = await getEvaluacionesLocales();
+      const pendientes = locales.filter(e => e.sync_status === 'pending');
+      for (const evalObj of pendientes) {
+        const respuestasArray = evalObj.respuestas.map(r => ({ num: r.num, respuesta: r.respuesta }));
+        const result = await callGAS('submitEvaluacion', {
+          empresa: evalObj.empresa,
+          fecha: evalObj.fecha,
+          evaluador: evalObj.evaluador,
+          representante: evalObj.representante,
+          asistentes: evalObj.asistentes,
+          respuestas: respuestasArray
+        });
+        if (result.success) {
+          await updateEvaluacionSyncStatus(evalObj.id, 'synced');
+          await deleteEvaluacionLocal(evalObj.id);
+        } else {
+          await updateEvaluacionSyncStatus(evalObj.id, 'error', result.message);
+        }
+      }
+
+      // 2. Descargar nuevas evaluaciones del servidor (últimas 30 días)
+      const desde = new Date();
+      desde.setDate(desde.getDate() - 30);
+      const desdeStr = desde.toISOString().split('T')[0];
+      const result = await callGAS('getEvaluaciones', { desde: desdeStr });
+      if (result.success) {
+        const cloudEvals = result.evaluaciones;
+        const localesIds = new Set((await getEvaluacionesLocales()).map(e => e.id));
+        for (const ce of cloudEvals) {
+          if (!localesIds.has(ce.id)) {
+            // Guardar como sincronizada (sin estado pending)
+            await saveEvaluacionLocal({ ...ce, sync_status: 'synced' });
+          }
+        }
+      }
+
+      // Refrescar la pestaña actual si es evaluaciones o dashboard
+      const activeTab = document.querySelector('.tab-btn.active')?.getAttribute('data-tab');
+      if (activeTab === 'evaluaciones') cargarEvaluaciones();
+      else if (activeTab === 'dashboard') cargarDashboard();
+
+      alert("Sincronización completada.");
+    } catch (err) {
+      console.error(err);
+      alert("Error durante la sincronización.");
+    } finally {
+      btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+      btn.disabled = false;
+    }
+  }
+
+  // ==================== FUNCIÓN FETCH (sin CORS manual) ====================
   async function callGAS(action, data = {}) {
     data.action = action;
     try {
@@ -646,7 +782,7 @@
     }
   }
 
-  // ========== UI ==========
+  // ==================== UI AUXILIARES ====================
   function showLogin() {
     document.getElementById('login-view').classList.remove('hidden');
     document.getElementById('main-view').classList.add('hidden');
@@ -682,30 +818,6 @@
   }
 
   // ========== PREGUNTAS ==========
-  async function loadPreguntas() {
-    const cached = localStorage.getItem(PREGUNTAS_CACHE_KEY);
-    if (cached) {
-      try {
-        const data = JSON.parse(cached);
-        if (Date.now() - data.timestamp < PREGUNTAS_CACHE_TIME) {
-          preguntas = data.preguntas;
-          renderPreguntasForm();
-          return true;
-        }
-      } catch(e) {}
-    }
-    const result = await callGAS('getPreguntas');
-    if (result.success) {
-      preguntas = result.preguntas;
-      localStorage.setItem(PREGUNTAS_CACHE_KEY, JSON.stringify({ preguntas, timestamp: Date.now() }));
-      renderPreguntasForm();
-      return true;
-    } else {
-      alert("Error al cargar preguntas: " + result.message);
-      return false;
-    }
-  }
-
   function renderPreguntasForm() {
     const container = document.getElementById('preguntas-container');
     if (!container) return;
@@ -720,18 +832,18 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead> <th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
-          html += `<tr>
-                      <td>${p.num}</td>
-                      <td>${p.criterio}</td>
-                      <td><div class="radio-group">
-                          <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
-                          <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
-                        </div></td>
-                    </tr>`;
+          html += `合乎
+                          <td>${p.num}</td>
+                          <td>${p.criterio}</td>
+                          <td><div class="radio-group">
+                            <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
+                            <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
+                          </div></td>
+                        </tr>`;
         });
         html += `</tbody></table></div>`;
       }
@@ -747,6 +859,7 @@
     });
   }
 
+  // ========== ENVÍO DE EVALUACIÓN (local + sincronización) ==========
   async function submitEvaluation() {
     const empresa = document.getElementById('empresa').value.trim();
     const fecha = document.getElementById('fecha-evaluacion').value;
@@ -763,19 +876,45 @@
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
-    const respuestas = preguntas.map(p => ({ num: p.num, respuesta: respuestasSeleccionadas[p.num] || 'No' }));
-    const result = await callGAS('submitEvaluacion', { empresa, fecha, evaluador, representante, asistentes, respuestas });
+    const respuestasArray = preguntas.map(p => ({ num: p.num, respuesta: respuestasSeleccionadas[p.num] || 'No' }));
+    const total = respuestasArray.filter(r => r.respuesta === 'Sí').length;
+    const id = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
 
-    if (result.success) {
-      const porcentaje = Math.round((result.total / preguntas.length) * 100);
-      alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length} (${porcentaje}%)`);
-      resetForm();
-      activarPestana('evaluaciones');
+    const evalObj = {
+      id: id,
+      empresa, fecha, evaluador, representante, asistentes,
+      respuestas: respuestasArray,
+      total_puntos: total,
+      created_at: new Date().toISOString(),
+      sync_status: 'pending'
+    };
+
+    await saveEvaluacionLocal(evalObj);
+    resetForm();
+
+    // Intentar sincronizar en segundo plano
+    if (navigator.onLine) {
+      try {
+        const result = await callGAS('submitEvaluacion', { empresa, fecha, evaluador, representante, asistentes, respuestas: respuestasArray });
+        if (result.success) {
+          await updateEvaluacionSyncStatus(id, 'synced');
+          await deleteEvaluacionLocal(id);
+          alert(`✅ Evaluación guardada y sincronizada. Puntaje: ${total} / ${preguntas.length} (${Math.round((total/preguntas.length)*100)}%)`);
+        } else {
+          await updateEvaluacionSyncStatus(id, 'error', result.message);
+          alert(`⚠️ Evaluación guardada localmente (sin conexión). Se sincronizará automáticamente.`);
+        }
+      } catch (err) {
+        await updateEvaluacionSyncStatus(id, 'error', err.message);
+        alert(`⚠️ Evaluación guardada localmente. Error de sincronización: ${err.message}`);
+      }
     } else {
-      showEvalError(result.message);
+      alert(`✅ Evaluación guardada localmente (sin conexión). Se sincronizará cuando recuperes internet.`);
     }
+
     submitBtn.disabled = false;
     submitBtn.innerHTML = 'Guardar evaluación';
+    activarPestana('evaluaciones');
   }
 
   function showEvalError(msg) {
@@ -799,21 +938,25 @@
     const container = document.getElementById('evaluaciones-list-container');
     container.innerHTML = '<div class="loader"></div> Cargando evaluaciones...';
     if (preguntas.length === 0) {
-      const checkInterval = setInterval(() => {
-        if (preguntas.length > 0) {
-          clearInterval(checkInterval);
-          cargarEvaluaciones();
-        }
-      }, 500);
+      setTimeout(() => cargarEvaluaciones(), 500);
       return;
     }
-    const result = await callGAS('getEvaluaciones');
-    if (result.success) {
-      todasEvaluaciones = result.evaluaciones;
-      poblarFiltrosEvaluaciones(todasEvaluaciones);
-      aplicarFiltrosEvaluaciones();
-    } else {
-      container.innerHTML = `<div class="alert alert-error">Error: ${result.message}</div>`;
+    const locales = await getEvaluacionesLocales();
+    todasEvaluaciones = locales; // Inicialmente locales, luego mezclamos con cloud si hay conexión
+    poblarFiltrosEvaluaciones(todasEvaluaciones);
+    aplicarFiltrosEvaluaciones();
+
+    if (navigator.onLine) {
+      // Traer del servidor las evaluaciones recientes (para mostrar sincronizadas)
+      const result = await callGAS('getEvaluaciones');
+      if (result.success) {
+        const cloudEvals = result.evaluaciones;
+        const localesIds = new Set(todasEvaluaciones.map(e => e.id));
+        const nuevas = cloudEvals.filter(ce => !localesIds.has(ce.id));
+        todasEvaluaciones = [...todasEvaluaciones, ...nuevas];
+        poblarFiltrosEvaluaciones(todasEvaluaciones);
+        aplicarFiltrosEvaluaciones();
+      }
     }
   }
 
@@ -844,18 +987,20 @@
       container.innerHTML = '<div class="alert">No hay evaluaciones con los filtros seleccionados.</div>';
       return;
     }
-    let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th></tr></thead><tbody>`;
+    let html = `<table class="data-table"><thead><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th>Estado</th><th></th></thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
+      const estado = e.sync_status === 'pending' ? '⏳ Pendiente' : (e.sync_status === 'error' ? '⚠️ Error' : '✅ Sincronizado');
       html += `<tr id="eval-row-${e.id}">
                   <td>${escapeHtml(e.empresa || '')}</td>
                   <td>${e.fecha_evaluacion || ''}</td>
                   <td>${escapeHtml(e.evaluador || '')}</td>
                   <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                  <td>${estado}</td>
                   <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
                 </tr>
-                <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando detalle...</div></td></tr>`;
+                <tr class="detail-row" id="detail-${e.id}"><td colspan="6"><div id="detail-content-${e.id}" class="loading-detail">Cargando detalle...</div></td></tr>`;
     });
     html += `</tbody></table>`;
     container.innerHTML = html;
@@ -870,62 +1015,75 @@
     detailRow.classList.add('show');
     const contentDiv = document.getElementById(`detail-content-${id}`);
     if (!contentDiv.innerHTML.includes('Cargando detalle')) return;
-    const result = await callGAS('getEvaluacionDetalle', { id });
-    if (result.success) {
-      const evaluacion = result.evaluacion;
-      const respuestas = result.respuestas;
-      const respMap = {};
-      respuestas.forEach(r => respMap[r.num] = r.respuesta);
-      const grouped = {};
-      preguntas.forEach(p => {
-        if (!grouped[p.pilar]) grouped[p.pilar] = {};
-        if (!grouped[p.pilar][p.elemento]) grouped[p.pilar][p.elemento] = [];
-        grouped[p.pilar][p.elemento].push(p);
-      });
-      let html = `<div><strong>Empresa:</strong> ${evaluacion.empresa}<br>
-                  <strong>Fecha:</strong> ${evaluacion.fecha_evaluacion}<br>
-                  <strong>Evaluador:</strong> ${evaluacion.evaluador}<br>
-                  <strong>Representante:</strong> ${evaluacion.representante}<br>
-                  <strong>Asistentes:</strong> ${evaluacion.asistentes}<br>
-                  <strong>Total puntos:</strong> ${evaluacion.total_puntos} / ${preguntas.length}</div>`;
-      for (const pilar in grouped) {
-        html += `<div class="section-title">${pilar}</div>`;
-        for (const elemento in grouped[pilar]) {
-          html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
-          grouped[pilar][elemento].forEach(p => {
-            const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
-            const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
-            html += `<tr>
-                        <td>${p.num}</td>
-                        <td>${p.criterio}</td>
-                        <td class="${respClass}">${resp}</td>
-                      </tr>`;
-          });
-          html += `</tbody></table></div>`;
-        }
-      }
-      contentDiv.innerHTML = html;
+    // Buscar la evaluación en todasEvaluaciones
+    let evaluacion = todasEvaluaciones.find(e => e.id === id);
+    let respMap = {};
+    if (evaluacion && evaluacion.respuestas) {
+      evaluacion.respuestas.forEach(r => respMap[r.num] = r.respuesta);
     } else {
-      contentDiv.innerHTML = `<div class="alert alert-error">Error al cargar detalle: ${result.message}</div>`;
+      // Si no está en memoria, descargar del servidor (solo si tiene id que no sea local)
+      if (!id.startsWith('local_')) {
+        const result = await callGAS('getEvaluacionDetalle', { id });
+        if (result.success) {
+          evaluacion = result.evaluacion;
+          result.respuestas.forEach(r => respMap[r.num] = r.respuesta);
+        } else {
+          contentDiv.innerHTML = `<div class="alert alert-error">Error al cargar detalle: ${result.message}</div>`;
+          return;
+        }
+      } else {
+        contentDiv.innerHTML = `<div class="alert alert-error">No se encontraron detalles para esta evaluación local.</div>`;
+        return;
+      }
     }
+    const grouped = {};
+    preguntas.forEach(p => {
+      if (!grouped[p.pilar]) grouped[p.pilar] = {};
+      if (!grouped[p.pilar][p.elemento]) grouped[p.pilar][p.elemento] = [];
+      grouped[p.pilar][p.elemento].push(p);
+    });
+    let html = `<div><strong>Empresa:</strong> ${evaluacion.empresa}<br>
+                <strong>Fecha:</strong> ${evaluacion.fecha_evaluacion}<br>
+                <strong>Evaluador:</strong> ${evaluacion.evaluador}<br>
+                <strong>Representante:</strong> ${evaluacion.representante}<br>
+                <strong>Asistentes:</strong> ${evaluacion.asistentes}<br>
+                <strong>Total puntos:</strong> ${evaluacion.total_puntos} / ${preguntas.length}</div>`;
+    for (const pilar in grouped) {
+      html += `<div class="section-title">${pilar}</div>`;
+      for (const elemento in grouped[pilar]) {
+        html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
+        grouped[pilar][elemento].forEach(p => {
+          const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
+          const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
+          html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+      }
+    }
+    contentDiv.innerHTML = html;
   };
 
   // ========== DASHBOARD ==========
   async function cargarDashboard() {
     const select = document.getElementById('dashboard-eval-select');
     select.innerHTML = '<option value="">Cargando evaluaciones...</option>';
-    const result = await callGAS('getEvaluaciones');
-    if (!result.success) {
-      select.innerHTML = '<option value="">Error al cargar evaluaciones</option>';
-      return;
+    const locales = await getEvaluacionesLocales();
+    let evals = locales;
+    if (navigator.onLine) {
+      const result = await callGAS('getEvaluaciones');
+      if (result.success) {
+        const cloudIds = new Set(result.evaluaciones.map(e => e.id));
+        const nuevas = result.evaluaciones.filter(ce => !evals.some(e => e.id === ce.id));
+        evals = [...evals, ...nuevas];
+      }
     }
-    todasEvaluaciones = result.evaluaciones;
+    todasEvaluaciones = evals;
     select.innerHTML = '<option value="">-- Selecciona una evaluación --</option>';
-    todasEvaluaciones.forEach(e => {
+    evals.forEach(e => {
       select.innerHTML += `<option value="${e.id}">${e.empresa} - ${e.fecha_evaluacion} (${e.evaluador})</option>`;
     });
-    if (todasEvaluaciones.length) {
-      const masReciente = todasEvaluaciones.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+    if (evals.length) {
+      const masReciente = evals.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
       select.value = masReciente.id;
       cargarDashboardParaEvaluacion(masReciente.id);
     } else {
@@ -935,14 +1093,19 @@
   }
 
   async function cargarDashboardParaEvaluacion(evalId) {
-    const detalle = await callGAS('getEvaluacionDetalle', { id: evalId });
-    if (!detalle.success) { alert("Error al cargar detalle"); return; }
-    const respuestas = detalle.respuestas;
-    const respMap = {};
-    respuestas.forEach(r => respMap[r.num] = r.respuesta);
+    let evaluacion = todasEvaluaciones.find(e => e.id === evalId);
+    let respMap = {};
+    if (evaluacion && evaluacion.respuestas) {
+      evaluacion.respuestas.forEach(r => respMap[r.num] = r.respuesta);
+    } else {
+      const result = await callGAS('getEvaluacionDetalle', { id: evalId });
+      if (!result.success) { alert("Error al cargar detalle"); return; }
+      evaluacion = result.evaluacion;
+      result.respuestas.forEach(r => respMap[r.num] = r.respuesta);
+    }
 
     const totalPreguntas = preguntas.length;
-    const totalSi = respuestas.filter(r => r.respuesta === 'Sí').length;
+    const totalSi = Object.values(respMap).filter(v => v === 'Sí').length;
     const porcentajeGeneral = Math.round((totalSi / totalPreguntas) * 100);
     document.getElementById('kpi-general').innerText = `${porcentajeGeneral}%`;
 
@@ -1006,14 +1169,13 @@
     });
 
     generarDetallePreguntas(respMap);
-    // Guardar datos actuales para PDF
     window.currentEvalData = {
       id: evalId,
-      empresa: detalle.evaluacion.empresa,
-      fecha: detalle.evaluacion.fecha_evaluacion,
-      evaluador: detalle.evaluacion.evaluador,
-      representante: detalle.evaluacion.representante,
-      asistentes: detalle.evaluacion.asistentes,
+      empresa: evaluacion.empresa,
+      fecha: evaluacion.fecha_evaluacion,
+      evaluador: evaluacion.evaluador,
+      representante: evaluacion.representante,
+      asistentes: evaluacion.asistentes,
       respMap: respMap,
       totalSi: totalSi,
       totalPreguntas: totalPreguntas,
@@ -1040,18 +1202,12 @@
                 </div>
                 <div class="element-questions">
                   <table>
-                    <thead>
-                      <tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr>
-                    </thead>
+                    <thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead>
                     <tbody>`;
       grouped[elemento].forEach(p => {
         const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
         const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
-        html += `<tr>
-                    <td>${p.num}</td>
-                    <td>${p.criterio}</td>
-                    <td class="${respClass}">${resp}</td>
-                  </tr>`;
+        html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
       });
       html += `</tbody></table></div></div>`;
     }
@@ -1082,7 +1238,7 @@
     window.currentEvalData = null;
   }
 
-  // ========== GENERACIÓN DE PDF MEJORADA ==========
+  // ========== GENERACIÓN DE PDF (MEJORADA) ==========
   async function generatePDF() {
     if (!window.currentEvalData) {
       alert("Primero seleccione una evaluación en el Dashboard.");
@@ -1092,92 +1248,91 @@
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const margin = 10;
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
     let y = margin;
 
-    // Obtener logo en dataURL
+    const COLORS = {
+      primary: [15, 23, 42],
+      accent: [249, 115, 22],
+      light: [241, 245, 249],
+      text: [33, 37, 41]
+    };
+
+    // Logo
     const logoImg = document.getElementById('logo-img');
     let logoDataUrl = null;
-    if (logoImg && logoImg.src && !logoImg.src.includes('onerror')) {
+    if (logoImg && logoImg.src) {
       try {
         const canvas = document.createElement('canvas');
         canvas.width = logoImg.naturalWidth;
         canvas.height = logoImg.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(logoImg, 0, 0);
-        logoDataUrl = canvas.toDataURL('image/png');
-      } catch(e) { console.warn("No se pudo cargar el logo"); }
+        canvas.getContext('2d').drawImage(logoImg, 0, 0);
+        logoDataUrl = canvas.toDataURL('image/png', 1.0);
+      } catch(e) {}
     }
 
-    // Función para agregar nueva página
-    function addNewPageIfNeeded(additionalHeight) {
-      if (y + additionalHeight > pdf.internal.pageSize.getHeight() - margin) {
-        pdf.addPage();
-        y = margin;
-        if (logoDataUrl) {
-          pdf.addImage(logoDataUrl, 'PNG', margin, y, 25, 25);
-          y += 30;
-        }
-      }
-    }
+    // Header
+    if (logoDataUrl) pdf.addImage(logoDataUrl, 'PNG', margin, y, 25, 25);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.setTextColor(...COLORS.primary);
+    pdf.text('REPORTE DE EVALUACIÓN OPERATIVA', pageWidth / 2, y + 12, { align: 'center' });
+    y += 30;
 
-    // Encabezado con logo y título
-    if (logoDataUrl) {
-      pdf.addImage(logoDataUrl, 'PNG', margin, y, 25, 25);
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y + 12, { align: 'center' });
-      y += 30;
-    } else {
-      pdf.setFontSize(18);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y, { align: 'center' });
-      y += 10;
-    }
-
-    // Tabla resumen con iconos y bordes
+    // Tabla resumen
     const summaryRows = [
-      ['🏢 Empresa', data.empresa],
-      ['📅 Fecha de evaluación', data.fecha],
-      ['👤 Evaluador', data.evaluador],
-      ['👥 Representante', data.representante],
-      ['📋 Asistentes', data.asistentes || 'Ninguno'],
-      ['📊 Resultado General', `${data.porcGeneral}%`],
-      ['⚙️ Resultado Estabilidad', `${data.porcEstabilidad}%`],
-      ['🔄 Resultado Mejora de Procesos', `${data.porcMejora}%`]
+      ['Empresa', data.empresa],
+      ['Fecha', data.fecha],
+      ['Evaluador', data.evaluador],
+      ['Representante', data.representante],
+      ['Asistentes', data.asistentes || 'Ninguno']
     ];
-
     pdf.autoTable({
       startY: y,
       body: summaryRows,
-      theme: 'grid',
-      styles: { fontSize: 9, cellPadding: 4, lineColor: [100,100,100], lineWidth: 0.2 },
-      headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
-      columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' }, 1: { cellWidth: 100 } },
-      margin: { left: margin, right: margin }
+      theme: 'plain',
+      styles: { fontSize: 10, cellPadding: 5, textColor: COLORS.text },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 70 }, 1: { cellWidth: 90 } },
+      margin: { left: (pageWidth - 160) / 2 },
+      didDrawCell: function (dataCell) {
+        if (dataCell.column.index === 0) {
+          pdf.setFillColor(...COLORS.light);
+          pdf.rect(dataCell.cell.x, dataCell.cell.y, dataCell.cell.width, dataCell.cell.height, 'F');
+        }
+      }
     });
-    y = pdf.lastAutoTable.finalY + 8;
+    y = pdf.lastAutoTable.finalY + 10;
 
-    // Capturar gráficos
+    // Barra resultado general
+    pdf.setFillColor(...COLORS.light);
+    pdf.rect(margin, y, pageWidth - margin * 2, 6, 'F');
+    pdf.setFillColor(...COLORS.accent);
+    pdf.rect(margin, y, (pageWidth - margin * 2) * (data.porcGeneral / 100), 6, 'F');
+    pdf.setFontSize(11);
+    pdf.text(`Resultado General: ${data.porcGeneral}%`, pageWidth / 2, y + 12, { align: 'center' });
+    y += 20;
+
+    // Gráficos centrados
     const radarCanvas = document.getElementById('radarChart');
     const barCanvas = document.getElementById('horizontalBarChart');
     if (radarCanvas && barCanvas) {
-      const radarImg = radarCanvas.toDataURL('image/png');
-      const barImg = barCanvas.toDataURL('image/png');
-      const imgWidth = 70; // mm
-      const imgHeight = 70; // mm (ajustar proporción)
-      const centerX = (pageWidth - (imgWidth * 2 + 10)) / 2;
-      addNewPageIfNeeded(imgHeight + 15);
-      pdf.addImage(radarImg, 'PNG', centerX, y, imgWidth, imgHeight);
-      pdf.addImage(barImg, 'PNG', centerX + imgWidth + 10, y, imgWidth, imgHeight);
-      y += imgHeight + 5;
-      pdf.setFontSize(8);
-      pdf.text('Cumplimiento por Elemento', centerX + imgWidth/2, y, { align: 'center' });
-      pdf.text('Cumplimiento por Elemento (Sí/No)', centerX + imgWidth + 10 + imgWidth/2, y, { align: 'center' });
-      y += 10;
+      const radarImg = radarCanvas.toDataURL('image/png', 1.0);
+      const barImg = barCanvas.toDataURL('image/png', 1.0);
+      const imgWidth = 80;
+      const radarHeight = radarCanvas.height * imgWidth / radarCanvas.width;
+      const barHeight = barCanvas.height * imgWidth / barCanvas.width;
+      const totalWidth = imgWidth * 2 + 10;
+      const startX = (pageWidth - totalWidth) / 2;
+      pdf.addImage(radarImg, 'PNG', startX, y, imgWidth, radarHeight);
+      pdf.addImage(barImg, 'PNG', startX + imgWidth + 10, y, imgWidth, barHeight);
+      y += Math.max(radarHeight, barHeight) + 10;
     }
 
-    // --- Preguntas agrupadas por elemento ---
+    // Página de preguntas
+    pdf.addPage();
+    y = margin;
+
     const preguntasPorElemento = {};
     preguntas.forEach(p => {
       if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = [];
@@ -1185,42 +1340,48 @@
     });
 
     for (const elemento in preguntasPorElemento) {
-      addNewPageIfNeeded(20);
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(11);
+      pdf.setFontSize(12);
+      pdf.setTextColor(...COLORS.primary);
       pdf.text(elemento, margin, y);
       y += 6;
-      const tableData = preguntasPorElemento[elemento].map(p => [p.num, p.criterio, data.respMap[p.num] === 'Sí' ? 'Sí' : 'No']);
-      const tableHeaders = ['No.', 'Criterio', 'Respuesta'];
-      const estimatedHeight = (tableData.length + 1) * 6;
-      addNewPageIfNeeded(estimatedHeight + 5);
+
+      const tableData = preguntasPorElemento[elemento].map(p => [
+        p.num,
+        p.criterio,
+        data.respMap[p.num] === 'Sí' ? 'Sí' : 'No'
+      ]);
+
       pdf.autoTable({
         startY: y,
-        head: [tableHeaders],
+        head: [['No.', 'Criterio', 'Respuesta']],
         body: tableData,
         theme: 'striped',
-        styles: { fontSize: 8, cellPadding: 2, lineColor: [150,150,150], lineWidth: 0.1 },
-        headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: COLORS.primary, textColor: 255 },
+        alternateRowStyles: { fillColor: COLORS.light },
         columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 120 }, 2: { cellWidth: 25 } },
-        margin: { left: margin, right: margin }
+        margin: { left: (pageWidth - 160) / 2 }
       });
-      y = pdf.lastAutoTable.finalY + 5;
+      y = pdf.lastAutoTable.finalY + 10;
+      if (y > pageHeight - 40) {
+        pdf.addPage();
+        y = margin;
+      }
     }
 
-    // --- Firmas al final ---
-    addNewPageIfNeeded(30);
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text('_______________________________', margin, y);
-    pdf.text(data.evaluador, margin + 20, y + 5);
-    pdf.text('Firma del Evaluador', margin, y + 10);
-
-    pdf.text('_______________________________', pageWidth - margin - 60, y);
-    pdf.text(data.representante, pageWidth - margin - 50, y + 5);
-    pdf.text('Firma del Representante', pageWidth - margin - 60, y + 10);
-
-    const fechaFirma = new Date().toLocaleDateString('es-ES');
-    pdf.text(`Fecha de firma: ${fechaFirma}`, margin, y + 25);
+    // Firmas
+    pdf.addPage();
+    y = 70;
+    const center = pageWidth / 2;
+    pdf.setDrawColor(0);
+    pdf.line(center - 70, y, center - 10, y);
+    pdf.text(data.evaluador, center - 40, y + 6, { align: 'center' });
+    pdf.text('Evaluador', center - 40, y + 12, { align: 'center' });
+    pdf.line(center + 10, y, center + 70, y);
+    pdf.text(data.representante, center + 40, y + 6, { align: 'center' });
+    pdf.text('Representante', center + 40, y + 12, { align: 'center' });
+    pdf.text(`Fecha de firma: ${new Date().toLocaleDateString('es-MX')}`, center, y + 30, { align: 'center' });
 
     pdf.save(`Evaluacion_Operativa_${data.empresa}_${data.fecha}.pdf`);
   }
@@ -1229,12 +1390,8 @@
   document.getElementById('login-btn').onclick = async () => {
     const username = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    const result = await callGAS('login', { username, password });
-    if (result.success) {
-      currentUser = result.user;
-      const ok = await loadPreguntas();
-      if (ok) showMain();
-    } else {
+    const result = await login(username, password);
+    if (!result.success) {
       const errorDiv = document.getElementById('login-error');
       errorDiv.textContent = result.message;
       errorDiv.classList.remove('hidden');
@@ -1261,7 +1418,8 @@
       document.getElementById('register-error').classList.remove('hidden');
     }
   };
-  document.getElementById('logout-btn').onclick = () => showLogin();
+  document.getElementById('logout-btn').onclick = () => logout();
+  document.getElementById('sync-btn').onclick = () => syncData();
   document.getElementById('cancel-new').onclick = () => activarPestana('evaluaciones');
   document.getElementById('submit-evaluation').onclick = submitEvaluation;
   document.getElementById('apply-filters-evaluaciones').onclick = () => aplicarFiltrosEvaluaciones();
@@ -1286,7 +1444,10 @@
     });
   }
 
-  showLogin();
+  // Inicialización: restaurar sesión o mostrar login
+  if (!restoreSession()) {
+    showLogin();
+  }
 </script>
 </body>
 </html>
