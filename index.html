@@ -720,18 +720,18 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead> <th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
+        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
-          html += `合乎
-                         <td>${p.num}</td>
-                         <td>${p.criterio}</td>
-                         <td><div class="radio-group">
-                            <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
-                            <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
-                          </div></td>
-                         </tr>`;
+          html += `<tr>
+                      <td>${p.num}</td>
+                      <td>${p.criterio}</td>
+                      <td><div class="radio-group">
+                          <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
+                          <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
+                        </div></td>
+                    </tr>`;
         });
         html += `</tbody></table></div>`;
       }
@@ -844,17 +844,17 @@
       container.innerHTML = '<div class="alert">No hay evaluaciones con los filtros seleccionados.</div>';
       return;
     }
-    let html = `<table class="data-table"><thead> <th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th> </thead><tbody>`;
+    let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th></tr></thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
       html += `<tr id="eval-row-${e.id}">
-                   <td>${escapeHtml(e.empresa || '')}</td>
-                   <td>${e.fecha_evaluacion || ''}</td>
-                   <td>${escapeHtml(e.evaluador || '')}</td>
-                   <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
-                   <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
-                 </tr>
+                  <td>${escapeHtml(e.empresa || '')}</td>
+                  <td>${e.fecha_evaluacion || ''}</td>
+                  <td>${escapeHtml(e.evaluador || '')}</td>
+                  <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                  <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
+                </tr>
                 <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando detalle...</div></td></tr>`;
     });
     html += `</tbody></table>`;
@@ -891,15 +891,15 @@
       for (const pilar in grouped) {
         html += `<div class="section-title">${pilar}</div>`;
         for (const elemento in grouped[pilar]) {
-          html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead> <th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
+          html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
           grouped[pilar][elemento].forEach(p => {
             const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
             const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
             html += `<tr>
-                         <td>${p.num}</td>
-                         <td>${p.criterio}</td>
-                         <td class="${respClass}">${resp}</td>
-                       </tr>`;
+                        <td>${p.num}</td>
+                        <td>${p.criterio}</td>
+                        <td class="${respClass}">${resp}</td>
+                      </tr>`;
           });
           html += `</tbody></table></div>`;
         }
@@ -1082,7 +1082,7 @@
     window.currentEvalData = null;
   }
 
-  // ========== GENERACIÓN DE PDF ==========
+  // ========== GENERACIÓN DE PDF MEJORADA ==========
   async function generatePDF() {
     if (!window.currentEvalData) {
       alert("Primero seleccione una evaluación en el Dashboard.");
@@ -1103,27 +1103,34 @@
       }
     }
 
-    // --- Página 1: Datos generales y gráficos ---
-    pdf.setFontSize(18);
+    // --- Página 1: Tabla resumen + gráficos horizontales ---
+    pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y, { align: 'center' });
-    y += 12;
+    y += 10;
 
-    pdf.setFontSize(11);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Empresa: ${data.empresa}`, margin, y); y += 7;
-    pdf.text(`Fecha de evaluación: ${data.fecha}`, margin, y); y += 7;
-    pdf.text(`Evaluador: ${data.evaluador}`, margin, y); y += 7;
-    pdf.text(`Representante de la organización: ${data.representante}`, margin, y); y += 7;
-    pdf.text(`Asistentes: ${data.asistentes || 'Ninguno'}`, margin, y); y += 10;
+    // Tabla resumen de la empresa y resultados
+    const summaryData = [
+      ['Empresa', data.empresa],
+      ['Fecha de evaluación', data.fecha],
+      ['Evaluador', data.evaluador],
+      ['Representante', data.representante],
+      ['Asistentes', data.asistentes || 'Ninguno'],
+      ['Resultado General', `${data.porcGeneral}%`],
+      ['Resultado Estabilidad', `${data.porcEstabilidad}%`],
+      ['Resultado Mejora de Procesos', `${data.porcMejora}%`]
+    ];
 
-    // KPIs
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Resultados Generales', margin, y); y += 6;
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Resultado General: ${data.porcGeneral}%`, margin, y); y += 5;
-    pdf.text(`Resultado Estabilidad: ${data.porcEstabilidad}%`, margin, y); y += 5;
-    pdf.text(`Resultado Mejora de Procesos: ${data.porcMejora}%`, margin, y); y += 10;
+    pdf.autoTable({
+      startY: y,
+      body: summaryData,
+      theme: 'striped',
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
+      columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 100 } },
+      margin: { left: margin, right: margin }
+    });
+    y = pdf.lastAutoTable.finalY + 8;
 
     // Capturar gráficos como imágenes
     const radarCanvas = document.getElementById('radarChart');
@@ -1133,14 +1140,18 @@
       const barImg = barCanvas.toDataURL('image/png');
       const imgWidth = 85;
       const imgHeight = 85;
+      // Calcular espacio disponible en la página
       addNewPageIfNeeded(imgHeight + 20);
+      // Posicionar gráficos uno al lado del otro
       pdf.addImage(radarImg, 'PNG', margin, y, imgWidth, imgHeight);
-      pdf.text('Cumplimiento por Elemento', margin + imgWidth + 5, y + 10);
+      pdf.addImage(barImg, 'PNG', pageWidth - margin - imgWidth, y, imgWidth, imgHeight);
       y += imgHeight + 5;
-      addNewPageIfNeeded(imgHeight + 20);
-      pdf.addImage(barImg, 'PNG', margin, y, imgWidth, imgHeight);
-      pdf.text('Cumplimiento por Elemento (Sí/No)', margin + imgWidth + 5, y + 10);
-      y += imgHeight + 15;
+      // Etiquetas debajo de cada gráfico
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Cumplimiento por Elemento', margin + imgWidth/2, y, { align: 'center' });
+      pdf.text('Cumplimiento por Elemento (Sí/No)', pageWidth - margin - imgWidth/2, y, { align: 'center' });
+      y += 10;
     }
 
     // --- Páginas siguientes: Preguntas agrupadas por elemento ---
@@ -1153,18 +1164,14 @@
     for (const elemento in preguntasPorElemento) {
       addNewPageIfNeeded(15);
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
+      pdf.setFontSize(11);
       pdf.text(elemento, margin, y);
-      y += 8;
-      pdf.setFontSize(9);
-
+      y += 6;
+      pdf.setFontSize(8);
       const tableData = preguntasPorElemento[elemento].map(p => [p.num, p.criterio, data.respMap[p.num] === 'Sí' ? 'Sí' : 'No']);
       const tableHeaders = ['No.', 'Criterio', 'Respuesta'];
-      // Calcular altura estimada
-      const rowHeight = 6;
-      const estimatedHeight = (tableData.length + 1) * rowHeight;
+      const estimatedHeight = (tableData.length + 1) * 5;
       addNewPageIfNeeded(estimatedHeight + 5);
-
       pdf.autoTable({
         startY: y,
         head: [tableHeaders],
@@ -1175,17 +1182,11 @@
         columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 120 }, 2: { cellWidth: 25 } },
         margin: { left: margin, right: margin }
       });
-      y = pdf.lastAutoTable.finalY + 5;
+      y = pdf.lastAutoTable.finalY + 3;
     }
 
-    // --- Última página: Firmas ---
-    pdf.addPage();
-    y = margin;
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Firmas de conformidad', pageWidth / 2, y, { align: 'center' });
-    y += 20;
-
+    // --- Firmas al final de la última página (no en página aparte) ---
+    addNewPageIfNeeded(20);
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
     pdf.text('_______________________________', margin, y);
