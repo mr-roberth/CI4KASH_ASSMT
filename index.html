@@ -10,6 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <style>
     /* ========== PALETA DE COLORES ========== */
     :root {
@@ -22,25 +23,29 @@
       --text-light: #4b5563;
       --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--light-bg);
       color: var(--text);
       line-height: 1.5;
-      font-size: 16px;
+      overflow-x: hidden;
     }
     .app-container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 2rem 1.5rem;
+      padding: 1rem;
     }
     /* Header con degradado */
     .header {
       background: linear-gradient(135deg, #0f2b5e 0%, #3b4d7a 100%);
       border-radius: 1rem 1rem 0 0;
-      margin: -2rem -1.5rem 2rem -1.5rem;
-      padding: 1.5rem 2rem;
+      margin: -1rem -1rem 1rem -1rem;
+      padding: 1rem 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -51,191 +56,336 @@
     .logo-area {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
     }
     .logo-area img {
-      height: 45px;
+      height: 40px;
       width: auto;
     }
     .logo-text {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 700;
       color: white;
     }
     .user-info {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.8rem;
       background: rgba(255,255,255,0.15);
-      padding: 0.5rem 1rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 40px;
       backdrop-filter: blur(4px);
     }
-    .user-name { font-weight: 600; font-size: 0.9rem; color: white; }
+    .user-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: white;
+    }
     .btn-logout {
-      background: none; border: none; color: white; cursor: pointer;
-      font-size: 1rem; opacity: 0.8; transition: opacity 0.2s;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      opacity: 0.8;
+      transition: opacity 0.2s;
     }
     .btn-logout:hover { opacity: 1; }
     /* Pestañas */
     .tabs {
       display: flex;
       gap: 0.5rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       border-bottom: 2px solid var(--border);
       flex-wrap: wrap;
     }
     .tab-btn {
-      background: transparent; border: none; padding: 0.75rem 1.5rem;
-      font-size: 1rem; font-weight: 600; color: var(--text-light);
-      cursor: pointer; transition: all 0.2s; border-radius: 30px 30px 0 0;
+      background: transparent;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 30px 30px 0 0;
     }
     .tab-btn.active {
-      color: var(--secondary); border-bottom: 3px solid var(--secondary);
+      color: var(--secondary);
+      border-bottom: 3px solid var(--secondary);
       background: white;
     }
-    .tab-btn:hover:not(.active) { background: #f1f5f9; color: var(--primary); }
+    .tab-btn:hover:not(.active) {
+      background: #f1f5f9;
+      color: var(--primary);
+    }
     /* Tarjetas */
     .card {
-      background: white; border-radius: 1rem; box-shadow: var(--shadow);
-      padding: 1.8rem; margin-bottom: 2rem;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: var(--shadow);
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
     }
     .card-title {
-      font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;
-      color: var(--primary); border-left: 4px solid var(--secondary); padding-left: 1rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      border-left: 4px solid var(--secondary);
+      padding-left: 0.8rem;
     }
     .form-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.2rem; margin-bottom: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.2rem;
     }
     .form-group label {
-      font-weight: 600; display: block; margin-bottom: 0.4rem;
-      font-size: 0.85rem; color: var(--text-light);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.8rem;
+      color: var(--text-light);
     }
-    .form-group input, .form-group select {
-      width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border);
-      border-radius: 0.75rem; font-family: inherit; background: white;
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      font-family: inherit;
+      background: white;
+      font-size: 0.9rem;
     }
-    /* Tabla de preguntas: scroll horizontal en móviles */
+    /* Tabla de preguntas con scroll horizontal */
     .evaluation-table-wrapper {
       overflow-x: auto;
       margin: 1rem 0;
     }
     .evaluation-table {
       width: 100%;
-      min-width: 600px;
+      min-width: 500px;
       border-collapse: collapse;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
     .evaluation-table th {
-      background: var(--primary); color: white; padding: 12px;
-      font-weight: 600; text-align: center; border: 1px solid var(--primary-dark);
+      background: var(--primary);
+      color: white;
+      padding: 10px;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid var(--primary-dark);
     }
     .evaluation-table td {
-      border: 1px solid var(--border); padding: 12px; vertical-align: top;
+      border: 1px solid var(--border);
+      padding: 10px;
+      vertical-align: top;
     }
     .section-title {
-      background: #f1f5f9; padding: 12px 16px; font-weight: 700; font-size: 1.1rem;
-      margin-top: 1.5rem; border-radius: 10px; color: var(--primary);
+      background: #f1f5f9;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-top: 1rem;
+      border-radius: 8px;
+      color: var(--primary);
       border-left: 4px solid var(--secondary);
     }
     .sub-section {
-      background: #f8fafc; padding: 8px 16px; font-weight: 600; margin-top: 0.5rem;
-      border-left: 4px solid var(--secondary); color: var(--text);
+      background: #f8fafc;
+      padding: 6px 12px;
+      font-weight: 600;
+      margin-top: 0.4rem;
+      border-left: 4px solid var(--secondary);
+      color: var(--text);
       cursor: pointer;
       transition: background 0.2s;
     }
-    .sub-section:hover { background: #e2e8f0; }
+    .sub-section:hover {
+      background: #e2e8f0;
+    }
     .radio-group {
-      display: flex; gap: 1.5rem; align-items: center; justify-content: center;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
       flex-wrap: wrap;
     }
     .btn {
-      background: var(--primary); color: white; border: none; padding: 0.7rem 1.4rem;
-      border-radius: 40px; font-weight: 600; cursor: pointer; font-size: 0.9rem;
-      display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
     }
-    .btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    .btn-secondary { background: #64748b; }
-    .btn-secondary:hover { background: #475569; }
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #64748b;
+    }
+    .btn-secondary:hover {
+      background: #475569;
+    }
     .btn-outline {
-      background: white; border: 1px solid var(--primary); color: var(--primary);
+      background: white;
+      border: 1px solid var(--primary);
+      color: var(--primary);
     }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-    .alert {
-      padding: 0.8rem 1rem; border-radius: 12px; margin-bottom: 1rem;
-    }
-    .alert-error { background: #fee2e2; color: #b91c1c; border-left: 4px solid #b91c1c; }
-    .alert-success { background: #e0f2e9; color: var(--primary); border-left: 4px solid var(--primary); }
-    .hidden { display: none; }
-    table.data-table {
-      width: 100%; border-collapse: collapse; margin-top: 1rem;
-    }
-    table.data-table th, table.data-table td {
-      border: 1px solid var(--border); padding: 12px; text-align: left;
-    }
-    table.data-table th { background: #f1f5f9; font-weight: 600; }
-    .filter-bar {
-      display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1.5rem;
-    }
-    .filter-bar .form-group { flex: 1; min-width: 150px; }
-    /* Dashboard layout */
-    .dashboard-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-    .kpi-block {
-      flex: 1;
-      min-width: 180px;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .kpi-card {
-      background: white; border-radius: 1rem; padding: 1.2rem;
-      box-shadow: var(--shadow); text-align: center; border-top: 4px solid var(--secondary);
-    }
-    .kpi-value { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 0.5rem 0; }
-    .kpi-label { font-size: 0.9rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
-    .chart-container {
-      background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow);
-      flex: 2; min-width: 300px;
-    }
-    .chart-wrapper { position: relative; height: 300px; margin-top: 1rem; }
-    .dashboard-selector {
-      margin-bottom: 1.5rem;
+    .flex-between {
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .alert {
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+    }
+    .alert-error {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-left: 4px solid #b91c1c;
+    }
+    .alert-success {
+      background: #e0f2e9;
+      color: var(--primary);
+      border-left: 4px solid var(--primary);
+    }
+    .hidden {
+      display: none;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+    }
+    table.data-table th,
+    table.data-table td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+    }
+    table.data-table th {
+      background: #f1f5f9;
+      font-weight: 600;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 1.2rem;
+    }
+    .filter-bar .form-group {
+      flex: 1;
+      min-width: 130px;
+    }
+    /* Dashboard layout responsive */
+    .dashboard-row {
+      display: flex;
+      flex-wrap: wrap;
       gap: 1rem;
+      margin-top: 1rem;
+    }
+    .kpi-block {
+      flex: 1;
+      min-width: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .kpi-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+      border-top: 4px solid var(--secondary);
+    }
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 0.3rem 0;
+    }
+    .kpi-label {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .chart-container {
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      flex: 2;
+      min-width: 250px;
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 250px;
+      margin-top: 0.8rem;
+    }
+    .dashboard-selector {
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.8rem;
     }
     .loader {
-      display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3;
-      border-top: 2px solid var(--secondary); border-radius: 50%; animation: spin 0.8s linear infinite;
-      margin-right: 8px;
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid var(--secondary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 6px;
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
     /* Detalle expandible en evaluaciones */
     .detail-row {
       background: #f8fafc;
       border-radius: 0.75rem;
-      margin-top: 1rem;
-      padding: 1rem;
+      margin-top: 0.8rem;
+      padding: 0.8rem;
       display: none;
     }
-    .detail-row.show { display: table-row; }
-    .detail-row td { padding: 1rem; background: #f8fafc; }
-    /* Detalle de preguntas en dashboard (tabla colapsable con cabeceras estilizadas) */
+    .detail-row.show {
+      display: table-row;
+    }
+    .detail-row td {
+      padding: 0.8rem;
+      background: #f8fafc;
+    }
+    /* Detalle de preguntas en dashboard (tabla colapsable) */
     .question-detail {
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       border-top: 2px solid var(--border);
-      padding-top: 1.5rem;
+      padding-top: 1rem;
     }
     .element-group {
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       border: 1px solid var(--border);
       border-radius: 0.5rem;
       overflow: hidden;
@@ -243,59 +393,112 @@
     .element-header {
       background: var(--primary);
       color: white;
-      padding: 12px 16px;
+      padding: 10px 12px;
       cursor: pointer;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       transition: background 0.2s;
+      font-size: 0.9rem;
     }
-    .element-header:hover { background: var(--primary-dark); }
-    .element-header i { transition: transform 0.2s; color: var(--secondary); }
-    .element-header.collapsed i { transform: rotate(-90deg); }
-    .element-questions { display: block; overflow-x: auto; }
-    .element-questions.collapsed { display: none; }
+    .element-header:hover {
+      background: var(--primary-dark);
+    }
+    .element-header i {
+      transition: transform 0.2s;
+      color: var(--secondary);
+    }
+    .element-header.collapsed i {
+      transform: rotate(-90deg);
+    }
+    .element-questions {
+      display: block;
+      overflow-x: auto;
+    }
+    .element-questions.collapsed {
+      display: none;
+    }
     .element-questions table {
       width: 100%;
       border-collapse: collapse;
+      font-size: 0.8rem;
     }
     .element-questions th {
       background: #f1f5f9;
       font-weight: 600;
-      padding: 10px;
+      padding: 8px;
       border: 1px solid var(--border);
     }
     .element-questions td {
       border: 1px solid var(--border);
-      padding: 8px 12px;
+      padding: 6px 8px;
     }
-    .answer-yes { color: #1e3a8a; font-weight: 600; }
-    .answer-no { color: #f97316; font-weight: 600; }
-    /* Estilos responsivos para móviles */
+    .answer-yes {
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+    .answer-no {
+      color: #f97316;
+      font-weight: 600;
+    }
+    /* Estilos responsivos adicionales */
     @media (max-width: 768px) {
-      .app-container { padding: 1rem; }
-      .header { margin: -1rem -1rem 1rem -1rem; padding: 1rem; }
-      .card { padding: 1.2rem; }
-      .form-grid { grid-template-columns: 1fr; }
-      .evaluation-table { font-size: 0.75rem; min-width: 500px; }
-      .filter-bar { flex-direction: column; align-items: stretch; }
-      .dashboard-row { flex-direction: column; }
-      .kpi-block { flex-direction: row; flex-wrap: wrap; }
-      .kpi-card { flex: 1; }
-      .tab-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
-      .radio-group { gap: 0.8rem; }
-      .btn { padding: 0.6rem 1.2rem; font-size: 0.85rem; }
-    }
-    /* Estilos para la generación de PDF (ocultos en pantalla) */
-    .pdf-export {
-      position: fixed;
-      top: -9999px;
-      left: -9999px;
-      width: 800px;
-      background: white;
-      padding: 20px;
-      font-family: 'Inter', sans-serif;
+      .app-container {
+        padding: 0.8rem;
+      }
+      .header {
+        padding: 0.8rem 1rem;
+      }
+      .logo-text {
+        font-size: 1rem;
+      }
+      .card {
+        padding: 1rem;
+      }
+      .card-title {
+        font-size: 1.2rem;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+      }
+      .evaluation-table {
+        min-width: 450px;
+      }
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .dashboard-row {
+        flex-direction: column;
+      }
+      .kpi-block {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .kpi-card {
+        flex: 1;
+        min-width: 120px;
+      }
+      .chart-container {
+        min-width: auto;
+      }
+      .chart-wrapper {
+        height: 220px;
+      }
+      .tab-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+      }
+      .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+      }
+      .element-header {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
@@ -316,14 +519,14 @@
   <div id="login-view">
     <div class="card" style="max-width: 480px; margin: 2rem auto;">
       <div style="text-align: center; margin-bottom: 1rem;">
-        <img src="logo_c4.png" alt="Logo" style="height: 60px;" onerror="this.style.display='none'">
+        <img src="logo_c4.png" alt="Logo" style="height: 50px;" onerror="this.style.display='none'">
       </div>
       <div class="card-title">Acceso al sistema</div>
       <div id="login-error" class="alert alert-error hidden"></div>
       <div class="form-group"><label>Correo electrónico</label><input type="email" id="login-email"></div>
       <div class="form-group"><label>Contraseña</label><input type="password" id="login-password"></div>
       <button id="login-btn" class="btn" style="width: 100%; justify-content: center;">Ingresar</button>
-      <p style="margin-top: 1.5rem; text-align: center;">¿No tienes cuenta? <a href="#" id="show-register" style="color: var(--secondary);">Regístrate aquí</a></p>
+      <p style="margin-top: 1rem; text-align: center;">¿No tienes cuenta? <a href="#" id="show-register" style="color: var(--secondary);">Regístrate aquí</a></p>
     </div>
     <div class="card hidden" id="register-card" style="max-width: 480px; margin: 0 auto;">
       <div class="card-title">Registro de usuario</div>
@@ -359,7 +562,7 @@
         <div class="evaluation-table-wrapper">
           <div id="preguntas-container"></div>
         </div>
-        <div class="flex-between" style="margin-top: 1.5rem;">
+        <div class="flex-between" style="margin-top: 1rem;">
           <button id="cancel-new" class="btn btn-secondary">Cancelar</button>
           <button id="submit-evaluation" class="btn">Guardar evaluación</button>
         </div>
@@ -391,7 +594,7 @@
       <div class="card">
         <div class="card-title">Dashboard de resultados</div>
         <div class="dashboard-selector">
-          <div class="form-group" style="width: 300px;">
+          <div class="form-group" style="width: 260px;">
             <label>Seleccionar evaluación</label>
             <select id="dashboard-eval-select"></select>
           </div>
@@ -408,7 +611,7 @@
             <div class="chart-container"><h3>Cumplimiento por Elemento (Sí/No)</h3><div class="chart-wrapper"><canvas id="horizontalBarChart"></canvas></div></div>
           </div>
           <div class="question-detail" id="question-detail">
-            <h3 style="margin-bottom: 1rem; color: var(--primary);">Detalle de preguntas</h3>
+            <h3 style="margin-bottom: 0.8rem; color: var(--primary);">Detalle de preguntas</h3>
             <div id="question-detail-content">Seleccione una evaluación para ver el detalle.</div>
           </div>
         </div>
@@ -517,18 +720,18 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
+        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead> <th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
-          html += `<tr>
-                      <td>${p.num}</td>
-                      <td>${p.criterio}</td>
-                      <td><div class="radio-group">
-                          <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
-                          <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
-                        </div></td>
-                    </tr>`;
+          html += `合乎
+                         <td>${p.num}</td>
+                         <td>${p.criterio}</td>
+                         <td><div class="radio-group">
+                            <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
+                            <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
+                          </div></td>
+                         </tr>`;
         });
         html += `</tbody></table></div>`;
       }
@@ -641,17 +844,17 @@
       container.innerHTML = '<div class="alert">No hay evaluaciones con los filtros seleccionados.</div>';
       return;
     }
-    let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th></tr></thead><tbody>`;
+    let html = `<table class="data-table"><thead> <th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th> </thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
       html += `<tr id="eval-row-${e.id}">
-                  <td>${escapeHtml(e.empresa || '')}</td>
-                  <td>${e.fecha_evaluacion || ''}</td>
-                  <td>${escapeHtml(e.evaluador || '')}</td>
-                  <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
-                  <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
-                </tr>
+                   <td>${escapeHtml(e.empresa || '')}</td>
+                   <td>${e.fecha_evaluacion || ''}</td>
+                   <td>${escapeHtml(e.evaluador || '')}</td>
+                   <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                   <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
+                 </tr>
                 <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando detalle...</div></td></tr>`;
     });
     html += `</tbody></table>`;
@@ -688,11 +891,15 @@
       for (const pilar in grouped) {
         html += `<div class="section-title">${pilar}</div>`;
         for (const elemento in grouped[pilar]) {
-          html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+          html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead> <th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
           grouped[pilar][elemento].forEach(p => {
             const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
             const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
-            html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
+            html += `<tr>
+                         <td>${p.num}</td>
+                         <td>${p.criterio}</td>
+                         <td class="${respClass}">${resp}</td>
+                       </tr>`;
           });
           html += `</tbody></table></div>`;
         }
@@ -833,12 +1040,18 @@
                 </div>
                 <div class="element-questions">
                   <table>
-                    <thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead>
+                    <thead>
+                      <tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr>
+                    </thead>
                     <tbody>`;
       grouped[elemento].forEach(p => {
         const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
         const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
-        html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
+        html += `<tr>
+                    <td>${p.num}</td>
+                    <td>${p.criterio}</td>
+                    <td class="${respClass}">${resp}</td>
+                  </tr>`;
       });
       html += `</tbody></table></div></div>`;
     }
@@ -879,77 +1092,58 @@
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 10;
-    const contentWidth = pageWidth - 2 * margin;
-
-    // Función auxiliar para agregar una nueva página si es necesario
     let y = margin;
 
+    // Función para agregar nueva página si es necesario
     function addNewPageIfNeeded(additionalHeight) {
-      if (y + additionalHeight > pageHeight - margin) {
+      if (y + additionalHeight > pdf.internal.pageSize.getHeight() - margin) {
         pdf.addPage();
         y = margin;
       }
     }
 
-    // --- PÁGINA 1: Datos generales y gráficos ---
+    // --- Página 1: Datos generales y gráficos ---
     pdf.setFontSize(18);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y, { align: 'center' });
-    y += 10;
-
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Empresa: ${data.empresa}`, margin, y);
-    y += 7;
-    pdf.text(`Fecha de evaluación: ${data.fecha}`, margin, y);
-    y += 7;
-    pdf.text(`Evaluador: ${data.evaluador}`, margin, y);
-    y += 7;
-    pdf.text(`Representante de la organización: ${data.representante}`, margin, y);
-    y += 7;
-    pdf.text(`Asistentes: ${data.asistentes || 'Ninguno'}`, margin, y);
     y += 12;
+
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Empresa: ${data.empresa}`, margin, y); y += 7;
+    pdf.text(`Fecha de evaluación: ${data.fecha}`, margin, y); y += 7;
+    pdf.text(`Evaluador: ${data.evaluador}`, margin, y); y += 7;
+    pdf.text(`Representante de la organización: ${data.representante}`, margin, y); y += 7;
+    pdf.text(`Asistentes: ${data.asistentes || 'Ninguno'}`, margin, y); y += 10;
 
     // KPIs
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Resultados Generales', margin, y);
-    y += 6;
+    pdf.text('Resultados Generales', margin, y); y += 6;
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Resultado General: ${data.porcGeneral}%`, margin, y);
-    y += 6;
-    pdf.text(`Resultado Estabilidad: ${data.porcEstabilidad}%`, margin, y);
-    y += 6;
-    pdf.text(`Resultado Mejora de Procesos: ${data.porcMejora}%`, margin, y);
-    y += 12;
+    pdf.text(`Resultado General: ${data.porcGeneral}%`, margin, y); y += 5;
+    pdf.text(`Resultado Estabilidad: ${data.porcEstabilidad}%`, margin, y); y += 5;
+    pdf.text(`Resultado Mejora de Procesos: ${data.porcMejora}%`, margin, y); y += 10;
 
-    // Gráfico radar (capturar como imagen)
+    // Capturar gráficos como imágenes
     const radarCanvas = document.getElementById('radarChart');
-    if (radarCanvas) {
+    const barCanvas = document.getElementById('horizontalBarChart');
+    if (radarCanvas && barCanvas) {
       const radarImg = radarCanvas.toDataURL('image/png');
-      const imgWidth = 80;
-      const imgHeight = 80;
+      const barImg = barCanvas.toDataURL('image/png');
+      const imgWidth = 85;
+      const imgHeight = 85;
       addNewPageIfNeeded(imgHeight + 20);
       pdf.addImage(radarImg, 'PNG', margin, y, imgWidth, imgHeight);
       pdf.text('Cumplimiento por Elemento', margin + imgWidth + 5, y + 10);
-      y += imgHeight + 10;
-    }
-
-    // Gráfico de barras horizontales
-    const barCanvas = document.getElementById('horizontalBarChart');
-    if (barCanvas) {
-      const barImg = barCanvas.toDataURL('image/png');
-      const imgWidth = 80;
-      const imgHeight = 80;
+      y += imgHeight + 5;
       addNewPageIfNeeded(imgHeight + 20);
       pdf.addImage(barImg, 'PNG', margin, y, imgWidth, imgHeight);
       pdf.text('Cumplimiento por Elemento (Sí/No)', margin + imgWidth + 5, y + 10);
       y += imgHeight + 15;
     }
 
-    // --- PÁGINAS SIGUIENTES: Preguntas (agrupadas por elemento) ---
-    // Agrupar preguntas por elemento
+    // --- Páginas siguientes: Preguntas agrupadas por elemento ---
     const preguntasPorElemento = {};
     preguntas.forEach(p => {
       if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = [];
@@ -957,19 +1151,16 @@
     });
 
     for (const elemento in preguntasPorElemento) {
-      addNewPageIfNeeded(30); // espacio para encabezado
+      addNewPageIfNeeded(15);
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(14);
+      pdf.setFontSize(12);
       pdf.text(elemento, margin, y);
-      y += 6;
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
+      y += 8;
+      pdf.setFontSize(9);
 
-      // Tabla de preguntas de este elemento
-      const pregList = preguntasPorElemento[elemento];
+      const tableData = preguntasPorElemento[elemento].map(p => [p.num, p.criterio, data.respMap[p.num] === 'Sí' ? 'Sí' : 'No']);
       const tableHeaders = ['No.', 'Criterio', 'Respuesta'];
-      const tableData = pregList.map(p => [p.num, p.criterio, data.respMap[p.num] === 'Sí' ? 'Sí' : 'No']);
-      // Estimar altura de la tabla
+      // Calcular altura estimada
       const rowHeight = 6;
       const estimatedHeight = (tableData.length + 1) * rowHeight;
       addNewPageIfNeeded(estimatedHeight + 5);
@@ -979,7 +1170,7 @@
         head: [tableHeaders],
         body: tableData,
         theme: 'striped',
-        styles: { fontSize: 8, cellPadding: 2 },
+        styles: { fontSize: 8, cellPadding: 2, lineColor: [200,200,200], lineWidth: 0.1 },
         headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
         columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 120 }, 2: { cellWidth: 25 } },
         margin: { left: margin, right: margin }
@@ -987,7 +1178,7 @@
       y = pdf.lastAutoTable.finalY + 5;
     }
 
-    // --- ÚLTIMA PÁGINA: Firmas ---
+    // --- Última página: Firmas ---
     pdf.addPage();
     y = margin;
     pdf.setFontSize(14);
@@ -995,23 +1186,19 @@
     pdf.text('Firmas de conformidad', pageWidth / 2, y, { align: 'center' });
     y += 20;
 
-    // Línea firma evaluador
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
     pdf.text('_______________________________', margin, y);
     pdf.text(data.evaluador, margin + 20, y + 5);
     pdf.text('Firma del Evaluador', margin, y + 10);
 
-    // Línea firma representante
     pdf.text('_______________________________', pageWidth - margin - 60, y);
     pdf.text(data.representante, pageWidth - margin - 50, y + 5);
     pdf.text('Firma del Representante', pageWidth - margin - 60, y + 10);
 
-    // Fecha de firma
     const fechaFirma = new Date().toLocaleDateString('es-ES');
     pdf.text(`Fecha de firma: ${fechaFirma}`, margin, y + 25);
 
-    // Guardar PDF
     pdf.save(`Evaluacion_Operativa_${data.empresa}_${data.fecha}.pdf`);
   }
 
