@@ -2,12 +2,14 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <meta name="referrer" content="no-referrer">
   <title>Gestión Operativa | Evaluación de Madurez</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     /* ========== PALETA DE COLORES ========== */
     :root {
@@ -26,13 +28,14 @@
       background: var(--light-bg);
       color: var(--text);
       line-height: 1.5;
+      font-size: 16px;
     }
     .app-container {
       max-width: 1400px;
       margin: 0 auto;
       padding: 2rem 1.5rem;
     }
-    /* Header con degradado azul a plateado */
+    /* Header con degradado */
     .header {
       background: linear-gradient(135deg, #0f2b5e 0%, #3b4d7a 100%);
       border-radius: 1rem 1rem 0 0;
@@ -80,6 +83,7 @@
       gap: 0.5rem;
       margin-bottom: 2rem;
       border-bottom: 2px solid var(--border);
+      flex-wrap: wrap;
     }
     .tab-btn {
       background: transparent; border: none; padding: 0.75rem 1.5rem;
@@ -112,8 +116,16 @@
       width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border);
       border-radius: 0.75rem; font-family: inherit; background: white;
     }
+    /* Tabla de preguntas: scroll horizontal en móviles */
+    .evaluation-table-wrapper {
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
     .evaluation-table {
-      width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem;
+      width: 100%;
+      min-width: 600px;
+      border-collapse: collapse;
+      font-size: 0.85rem;
     }
     .evaluation-table th {
       background: var(--primary); color: white; padding: 12px;
@@ -133,15 +145,10 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    .sub-section:hover {
-      background: #e2e8f0;
-    }
-    .sub-section i {
-      margin-right: 8px;
-      transition: transform 0.2s;
-    }
+    .sub-section:hover { background: #e2e8f0; }
     .radio-group {
       display: flex; gap: 1.5rem; align-items: center; justify-content: center;
+      flex-wrap: wrap;
     }
     .btn {
       background: var(--primary); color: white; border: none; padding: 0.7rem 1.4rem;
@@ -244,23 +251,11 @@
       gap: 10px;
       transition: background 0.2s;
     }
-    .element-header:hover {
-      background: var(--primary-dark);
-    }
-    .element-header i {
-      transition: transform 0.2s;
-      color: var(--secondary);
-    }
-    .element-header.collapsed i {
-      transform: rotate(-90deg);
-    }
-    .element-questions {
-      display: block;
-      overflow-x: auto;
-    }
-    .element-questions.collapsed {
-      display: none;
-    }
+    .element-header:hover { background: var(--primary-dark); }
+    .element-header i { transition: transform 0.2s; color: var(--secondary); }
+    .element-header.collapsed i { transform: rotate(-90deg); }
+    .element-questions { display: block; overflow-x: auto; }
+    .element-questions.collapsed { display: none; }
     .element-questions table {
       width: 100%;
       border-collapse: collapse;
@@ -275,56 +270,32 @@
       border: 1px solid var(--border);
       padding: 8px 12px;
     }
-    .answer-yes {
-      color: #1e3a8a;
-      font-weight: 600;
-    }
-    .answer-no {
-      color: #f97316;
-      font-weight: 600;
-    }
-    /* Estilos de impresión */
-    @media print {
-      .header, .tabs, .dashboard-selector .btn, .btn-logout, .btn-secondary, .filter-bar, .tab-btn, .btn {
-        display: none !important;
-      }
-      .card {
-        box-shadow: none;
-        padding: 0;
-        margin: 0;
-        page-break-inside: avoid;
-      }
-      .dashboard-row {
-        flex-direction: column;
-      }
-      .chart-container {
-        page-break-inside: avoid;
-        break-inside: avoid;
-        height: auto;
-        margin-bottom: 0;
-      }
-      .chart-wrapper {
-        height: 280px;
-      }
-      .question-detail {
-        page-break-before: always;
-      }
-      .element-group {
-        page-break-inside: avoid;
-      }
-    }
-    @media (max-width: 1024px) {
-      .dashboard-row { flex-direction: column; }
-      .kpi-block { flex-direction: row; flex-wrap: wrap; }
-      .kpi-card { flex: 1; }
-    }
+    .answer-yes { color: #1e3a8a; font-weight: 600; }
+    .answer-no { color: #f97316; font-weight: 600; }
+    /* Estilos responsivos para móviles */
     @media (max-width: 768px) {
       .app-container { padding: 1rem; }
       .header { margin: -1rem -1rem 1rem -1rem; padding: 1rem; }
       .card { padding: 1.2rem; }
       .form-grid { grid-template-columns: 1fr; }
-      .evaluation-table { font-size: 0.75rem; }
+      .evaluation-table { font-size: 0.75rem; min-width: 500px; }
       .filter-bar { flex-direction: column; align-items: stretch; }
+      .dashboard-row { flex-direction: column; }
+      .kpi-block { flex-direction: row; flex-wrap: wrap; }
+      .kpi-card { flex: 1; }
+      .tab-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
+      .radio-group { gap: 0.8rem; }
+      .btn { padding: 0.6rem 1.2rem; font-size: 0.85rem; }
+    }
+    /* Estilos para la generación de PDF (ocultos en pantalla) */
+    .pdf-export {
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      width: 800px;
+      background: white;
+      padding: 20px;
+      font-family: 'Inter', sans-serif;
     }
   </style>
 </head>
@@ -385,7 +356,9 @@
           <div class="form-group"><label>Representante organización *</label><input type="text" id="representante"></div>
           <div class="form-group"><label>Asistentes</label><input type="text" id="asistentes"></div>
         </div>
-        <div id="preguntas-container"></div>
+        <div class="evaluation-table-wrapper">
+          <div id="preguntas-container"></div>
+        </div>
         <div class="flex-between" style="margin-top: 1.5rem;">
           <button id="cancel-new" class="btn btn-secondary">Cancelar</button>
           <button id="submit-evaluation" class="btn">Guardar evaluación</button>
@@ -393,7 +366,7 @@
       </div>
     </div>
 
-    <!-- Pestaña Evaluaciones (nueva lógica rápida) -->
+    <!-- Pestaña Evaluaciones -->
     <div id="tab-evaluaciones" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Evaluaciones realizadas</div>
@@ -409,9 +382,7 @@
           <button id="apply-filters-evaluaciones" class="btn">Aplicar filtros</button>
           <button id="reset-filters-evaluaciones" class="btn btn-secondary">Mostrar todas</button>
         </div>
-        <div id="evaluaciones-list-container">
-          <!-- Aquí se cargará la tabla de evaluaciones -->
-        </div>
+        <div id="evaluaciones-list-container"></div>
       </div>
     </div>
 
@@ -546,20 +517,20 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<table class="evaluation-table"><thead> <th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
+        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
           html += `<tr>
-                        <td>${p.num}</td>
-                        <td>${p.criterio}</td>
-                        <td><div class="radio-group">
+                      <td>${p.num}</td>
+                      <td>${p.criterio}</td>
+                      <td><div class="radio-group">
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                      </tr>`;
+                    </tr>`;
         });
-        html += `</tbody></table>`;
+        html += `</tbody></table></div>`;
       }
     }
     container.innerHTML = html;
@@ -620,12 +591,10 @@
     renderPreguntasForm();
   }
 
-  // ========== EVALUACIONES (rápida) ==========
+  // ========== EVALUACIONES ==========
   async function cargarEvaluaciones() {
     const container = document.getElementById('evaluaciones-list-container');
     container.innerHTML = '<div class="loader"></div> Cargando evaluaciones...';
-
-    // Esperar preguntas si no están listas
     if (preguntas.length === 0) {
       const checkInterval = setInterval(() => {
         if (preguntas.length > 0) {
@@ -635,7 +604,6 @@
       }, 500);
       return;
     }
-
     const result = await callGAS('getEvaluaciones');
     if (result.success) {
       todasEvaluaciones = result.evaluaciones;
@@ -673,9 +641,7 @@
       container.innerHTML = '<div class="alert">No hay evaluaciones con los filtros seleccionados.</div>';
       return;
     }
-    let html = `<table class="data-table" style="width:100%"><thead>
-                   <th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th>
-                  </thead><tbody>`;
+    let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th></tr></thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
@@ -701,7 +667,6 @@
     detailRow.classList.add('show');
     const contentDiv = document.getElementById(`detail-content-${id}`);
     if (!contentDiv.innerHTML.includes('Cargando detalle')) return;
-
     const result = await callGAS('getEvaluacionDetalle', { id });
     if (result.success) {
       const evaluacion = result.evaluacion;
@@ -723,13 +688,13 @@
       for (const pilar in grouped) {
         html += `<div class="section-title">${pilar}</div>`;
         for (const elemento in grouped[pilar]) {
-          html += `<div class="sub-section">${elemento}</div><table class="evaluation-table"><thead><th>No.</th><th>Criterio</th><th>Respuesta</th></thead><tbody>`;
+          html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
           grouped[pilar][elemento].forEach(p => {
             const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
             const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
             html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
           });
-          html += `</tbody></table>`;
+          html += `</tbody></table></div>`;
         }
       }
       contentDiv.innerHTML = html;
@@ -834,6 +799,23 @@
     });
 
     generarDetallePreguntas(respMap);
+    // Guardar datos actuales para PDF
+    window.currentEvalData = {
+      id: evalId,
+      empresa: detalle.evaluacion.empresa,
+      fecha: detalle.evaluacion.fecha_evaluacion,
+      evaluador: detalle.evaluacion.evaluador,
+      representante: detalle.evaluacion.representante,
+      asistentes: detalle.evaluacion.asistentes,
+      respMap: respMap,
+      totalSi: totalSi,
+      totalPreguntas: totalPreguntas,
+      porcGeneral: porcentajeGeneral,
+      porcEstabilidad: porcEstabilidad,
+      porcMejora: porcMejora,
+      radarChartData: valoresRadar,
+      barChartData: { labels: elementosOrdenados, si: siCounts, no: noCounts }
+    };
   }
 
   function generarDetallePreguntas(respMap) {
@@ -843,7 +825,6 @@
       if (!grouped[p.elemento]) grouped[p.elemento] = [];
       grouped[p.elemento].push(p);
     });
-
     let html = '';
     for (const elemento in grouped) {
       html += `<div class="element-group">
@@ -852,8 +833,7 @@
                 </div>
                 <div class="element-questions">
                   <table>
-                    <thead>
-                      <tr><th>No.</th><th>Criterio</th><th>Respuesta</th> </thead>
+                    <thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead>
                     <tbody>`;
       grouped[elemento].forEach(p => {
         const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
@@ -886,6 +866,153 @@
     const ctxBar = document.getElementById('horizontalBarChart').getContext('2d');
     horizontalBarChart = new Chart(ctxBar, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true } });
     document.getElementById('question-detail-content').innerHTML = 'Seleccione una evaluación para ver el detalle.';
+    window.currentEvalData = null;
+  }
+
+  // ========== GENERACIÓN DE PDF ==========
+  async function generatePDF() {
+    if (!window.currentEvalData) {
+      alert("Primero seleccione una evaluación en el Dashboard.");
+      return;
+    }
+    const data = window.currentEvalData;
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const contentWidth = pageWidth - 2 * margin;
+
+    // Función auxiliar para agregar una nueva página si es necesario
+    let y = margin;
+
+    function addNewPageIfNeeded(additionalHeight) {
+      if (y + additionalHeight > pageHeight - margin) {
+        pdf.addPage();
+        y = margin;
+      }
+    }
+
+    // --- PÁGINA 1: Datos generales y gráficos ---
+    pdf.setFontSize(18);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y, { align: 'center' });
+    y += 10;
+
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Empresa: ${data.empresa}`, margin, y);
+    y += 7;
+    pdf.text(`Fecha de evaluación: ${data.fecha}`, margin, y);
+    y += 7;
+    pdf.text(`Evaluador: ${data.evaluador}`, margin, y);
+    y += 7;
+    pdf.text(`Representante de la organización: ${data.representante}`, margin, y);
+    y += 7;
+    pdf.text(`Asistentes: ${data.asistentes || 'Ninguno'}`, margin, y);
+    y += 12;
+
+    // KPIs
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Resultados Generales', margin, y);
+    y += 6;
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Resultado General: ${data.porcGeneral}%`, margin, y);
+    y += 6;
+    pdf.text(`Resultado Estabilidad: ${data.porcEstabilidad}%`, margin, y);
+    y += 6;
+    pdf.text(`Resultado Mejora de Procesos: ${data.porcMejora}%`, margin, y);
+    y += 12;
+
+    // Gráfico radar (capturar como imagen)
+    const radarCanvas = document.getElementById('radarChart');
+    if (radarCanvas) {
+      const radarImg = radarCanvas.toDataURL('image/png');
+      const imgWidth = 80;
+      const imgHeight = 80;
+      addNewPageIfNeeded(imgHeight + 20);
+      pdf.addImage(radarImg, 'PNG', margin, y, imgWidth, imgHeight);
+      pdf.text('Cumplimiento por Elemento', margin + imgWidth + 5, y + 10);
+      y += imgHeight + 10;
+    }
+
+    // Gráfico de barras horizontales
+    const barCanvas = document.getElementById('horizontalBarChart');
+    if (barCanvas) {
+      const barImg = barCanvas.toDataURL('image/png');
+      const imgWidth = 80;
+      const imgHeight = 80;
+      addNewPageIfNeeded(imgHeight + 20);
+      pdf.addImage(barImg, 'PNG', margin, y, imgWidth, imgHeight);
+      pdf.text('Cumplimiento por Elemento (Sí/No)', margin + imgWidth + 5, y + 10);
+      y += imgHeight + 15;
+    }
+
+    // --- PÁGINAS SIGUIENTES: Preguntas (agrupadas por elemento) ---
+    // Agrupar preguntas por elemento
+    const preguntasPorElemento = {};
+    preguntas.forEach(p => {
+      if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = [];
+      preguntasPorElemento[p.elemento].push(p);
+    });
+
+    for (const elemento in preguntasPorElemento) {
+      addNewPageIfNeeded(30); // espacio para encabezado
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(14);
+      pdf.text(elemento, margin, y);
+      y += 6;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+
+      // Tabla de preguntas de este elemento
+      const pregList = preguntasPorElemento[elemento];
+      const tableHeaders = ['No.', 'Criterio', 'Respuesta'];
+      const tableData = pregList.map(p => [p.num, p.criterio, data.respMap[p.num] === 'Sí' ? 'Sí' : 'No']);
+      // Estimar altura de la tabla
+      const rowHeight = 6;
+      const estimatedHeight = (tableData.length + 1) * rowHeight;
+      addNewPageIfNeeded(estimatedHeight + 5);
+
+      pdf.autoTable({
+        startY: y,
+        head: [tableHeaders],
+        body: tableData,
+        theme: 'striped',
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
+        columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 120 }, 2: { cellWidth: 25 } },
+        margin: { left: margin, right: margin }
+      });
+      y = pdf.lastAutoTable.finalY + 5;
+    }
+
+    // --- ÚLTIMA PÁGINA: Firmas ---
+    pdf.addPage();
+    y = margin;
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Firmas de conformidad', pageWidth / 2, y, { align: 'center' });
+    y += 20;
+
+    // Línea firma evaluador
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('_______________________________', margin, y);
+    pdf.text(data.evaluador, margin + 20, y + 5);
+    pdf.text('Firma del Evaluador', margin, y + 10);
+
+    // Línea firma representante
+    pdf.text('_______________________________', pageWidth - margin - 60, y);
+    pdf.text(data.representante, pageWidth - margin - 50, y + 5);
+    pdf.text('Firma del Representante', pageWidth - margin - 60, y + 10);
+
+    // Fecha de firma
+    const fechaFirma = new Date().toLocaleDateString('es-ES');
+    pdf.text(`Fecha de firma: ${fechaFirma}`, margin, y + 25);
+
+    // Guardar PDF
+    pdf.save(`Evaluacion_Operativa_${data.empresa}_${data.fecha}.pdf`);
   }
 
   // ========== EVENTOS ==========
@@ -933,7 +1060,7 @@
     document.getElementById('filter-evaluador-evaluaciones').value = '';
     aplicarFiltrosEvaluaciones();
   };
-  document.getElementById('print-pdf-btn').onclick = () => window.print();
+  document.getElementById('print-pdf-btn').onclick = () => generatePDF();
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => activarPestana(btn.getAttribute('data-tab')));
