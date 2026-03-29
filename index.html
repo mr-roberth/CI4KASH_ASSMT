@@ -205,126 +205,50 @@
     .sub-section:hover {
       background: #e2e8f0;
     }
+    /* RADIO BUTTONS MÁS GRANDES Y HORIZONTALES */
     .radio-group {
       display: flex;
-      gap: 1rem;
+      gap: 1.2rem;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
     }
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 40px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.85rem;
+    .radio-group label {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      transition: all 0.2s;
+      gap: 0.4rem;
+      cursor: pointer;
+      font-weight: normal;
+      font-size: 0.9rem;
     }
-    .btn:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
+    input[type="radio"] {
+      transform: scale(1.3);
+      margin-right: 4px;
+      cursor: pointer;
     }
-    .btn-secondary {
-      background: #64748b;
+    /* Resaltar sección con pregunta sin responder */
+    .missing-answer {
+      background-color: #fee2e2;
+      transition: background 0.3s;
     }
-    .btn-secondary:hover {
-      background: #475569;
-    }
-    .btn-outline {
-      background: white;
-      border: 1px solid var(--primary);
-      color: var(--primary);
-    }
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-    }
-    .alert {
-      padding: 0.7rem 1rem;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      font-size: 0.85rem;
-    }
-    .alert-error {
-      background: #fee2e2;
-      color: #b91c1c;
-      border-left: 4px solid #b91c1c;
-    }
-    .alert-success {
-      background: #e0f2e9;
-      color: var(--primary);
-      border-left: 4px solid var(--primary);
-    }
-    .hidden {
-      display: none;
-    }
-    table.data-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      font-size: 0.8rem;
-    }
-    table.data-table th,
-    table.data-table td {
-      border: 1px solid var(--border);
-      padding: 8px;
-      text-align: left;
-    }
-    table.data-table th {
-      background: #f1f5f9;
-      font-weight: 600;
-    }
-    .filter-bar {
-      display: flex;
-      gap: 0.8rem;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      margin-bottom: 1.2rem;
-    }
-    .filter-bar .form-group {
-      flex: 1;
-      min-width: 130px;
-    }
-    /* Dashboard layout responsive */
-    .dashboard-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    .kpi-block {
-      flex: 1;
-      min-width: 160px;
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-    }
+    /* Tarjetas KPI en Dashboard con fondo azul y texto blanco */
     .kpi-card {
-      background: white;
+      background: var(--primary-dark);
       border-radius: 1rem;
       padding: 1rem;
       box-shadow: var(--shadow);
       text-align: center;
-      border-top: 4px solid var(--secondary);
+      border: none;
     }
     .kpi-value {
       font-size: 2rem;
       font-weight: 800;
-      color: var(--primary);
+      color: white;
       margin: 0.3rem 0;
     }
     .kpi-label {
       font-size: 0.8rem;
-      color: var(--text-light);
+      color: rgba(255,255,255,0.85);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -498,6 +422,12 @@
       .element-header {
         padding: 8px 10px;
         font-size: 0.85rem;
+      }
+      .radio-group {
+        gap: 0.8rem;
+      }
+      input[type="radio"] {
+        transform: scale(1.1);
       }
     }
   </style>
@@ -719,19 +649,19 @@
     for (const pilar in grouped) {
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
-        html += `<div class="sub-section">${elemento}</div>`;
+        html += `<div class="sub-section" data-elemento="${elemento}">${elemento}</div>`;
         html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
-          html += `<tr>
-                      <td>${p.num}</td>
-                      <td>${p.criterio}</td>
-                      <td><div class="radio-group">
+          html += `<tr data-num="${p.num}">
+                       <td>${p.num}</td>
+                       <td>${p.criterio}</td>
+                       <td><div class="radio-group">
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                    </tr>`;
+                     </tr>`;
         });
         html += `</tbody></table></div>`;
       }
@@ -741,10 +671,38 @@
       const radios = document.querySelectorAll(`input[name="q_${p.num}"]`);
       radios.forEach(radio => {
         radio.addEventListener('change', (e) => {
-          if (e.target.checked) respuestasSeleccionadas[p.num] = e.target.value;
+          if (e.target.checked) {
+            respuestasSeleccionadas[p.num] = e.target.value;
+            // Quitar clase de error si la tenía
+            const row = document.querySelector(`tr[data-num="${p.num}"]`);
+            if (row) row.classList.remove('missing-answer');
+          }
         });
       });
     });
+  }
+
+  // Validar que todas las preguntas tengan respuesta
+  function validarTodasPreguntas() {
+    let todasRespondidas = true;
+    const sinResponder = [];
+    preguntas.forEach(p => {
+      if (!respuestasSeleccionadas[p.num]) {
+        todasRespondidas = false;
+        sinResponder.push(p.num);
+        // Resaltar fila
+        const row = document.querySelector(`tr[data-num="${p.num}"]`);
+        if (row) row.classList.add('missing-answer');
+      } else {
+        const row = document.querySelector(`tr[data-num="${p.num}"]`);
+        if (row) row.classList.remove('missing-answer');
+      }
+    });
+    if (!todasRespondidas) {
+      showEvalError(`❌ Faltan responder las preguntas: ${sinResponder.join(', ')}. Por favor, marca Sí o No para todas.`);
+      return false;
+    }
+    return true;
   }
 
   async function submitEvaluation() {
@@ -755,9 +713,11 @@
     const asistentes = document.getElementById('asistentes').value.trim();
 
     if (!empresa || !fecha || !representante) {
-      showEvalError("Completa los campos obligatorios: Empresa, Fecha, Representante");
+      showEvalError("❌ Completa los campos obligatorios: Empresa, Fecha, Representante");
       return;
     }
+
+    if (!validarTodasPreguntas()) return;
 
     const submitBtn = document.getElementById('submit-evaluation');
     submitBtn.disabled = true;
@@ -782,7 +742,7 @@
     const errorDiv = document.getElementById('eval-error');
     errorDiv.textContent = msg;
     errorDiv.classList.remove('hidden');
-    setTimeout(() => errorDiv.classList.add('hidden'), 4000);
+    setTimeout(() => errorDiv.classList.add('hidden'), 5000);
   }
 
   function resetForm() {
@@ -849,12 +809,12 @@
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
       html += `<tr id="eval-row-${e.id}">
-                  <td>${escapeHtml(e.empresa || '')}</td>
-                  <td>${e.fecha_evaluacion || ''}</td>
-                  <td>${escapeHtml(e.evaluador || '')}</td>
-                  <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
-                  <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
-                </tr>
+                   <td>${escapeHtml(e.empresa || '')}</td>
+                   <td>${e.fecha_evaluacion || ''}</td>
+                   <td>${escapeHtml(e.evaluador || '')}</td>
+                   <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                   <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
+                 </tr>
                 <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando detalle...</div></td></tr>`;
     });
     html += `</tbody></table>`;
@@ -896,10 +856,10 @@
             const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
             const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
             html += `<tr>
-                        <td>${p.num}</td>
-                        <td>${p.criterio}</td>
+                         <td>${p.num}</td>
+                         <td>${p.criterio}</td>
                         <td class="${respClass}">${resp}</td>
-                      </tr>`;
+                       </tr>`;
           });
           html += `</tbody></table></div>`;
         }
@@ -1082,7 +1042,7 @@
     window.currentEvalData = null;
   }
 
-  // ========== GENERACIÓN DE PDF MEJORADA ==========
+  // ========== GENERACIÓN DE PDF REDISEÑADA ==========
   async function generatePDF() {
     if (!window.currentEvalData) {
       alert("Primero seleccione una evaluación en el Dashboard.");
@@ -1095,7 +1055,6 @@
     const margin = 10;
     let y = margin;
 
-    // Función para agregar nueva página si es necesario
     function addNewPageIfNeeded(additionalHeight) {
       if (y + additionalHeight > pdf.internal.pageSize.getHeight() - margin) {
         pdf.addPage();
@@ -1103,58 +1062,73 @@
       }
     }
 
-    // --- Página 1: Tabla resumen + gráficos horizontales ---
+    // ========== PÁGINA 1: Info empresa + KPI + Gráficos ==========
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y, { align: 'center' });
-    y += 10;
+    y += 8;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, y, { align: 'center' });
+    y += 8;
 
-    // Tabla resumen de la empresa y resultados
+    // Tabla resumen empresa
     const summaryData = [
       ['Empresa', data.empresa],
       ['Fecha de evaluación', data.fecha],
       ['Evaluador', data.evaluador],
       ['Representante', data.representante],
-      ['Asistentes', data.asistentes || 'Ninguno'],
-      ['Resultado General', `${data.porcGeneral}%`],
-      ['Resultado Estabilidad', `${data.porcEstabilidad}%`],
-      ['Resultado Mejora de Procesos', `${data.porcMejora}%`]
+      ['Asistentes', data.asistentes || 'Ninguno']
     ];
-
     pdf.autoTable({
       startY: y,
       body: summaryData,
       theme: 'striped',
       styles: { fontSize: 9, cellPadding: 3 },
       headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
-      columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 100 } },
+      columnStyles: { 0: { cellWidth: 45 }, 1: { cellWidth: 120 } },
       margin: { left: margin, right: margin }
     });
     y = pdf.lastAutoTable.finalY + 8;
 
-    // Capturar gráficos como imágenes
+    // 3 Tarjetas KPI horizontales
+    const kpiWidth = (pageWidth - margin * 2 - 8) / 3;
+    const kpiX = [margin, margin + kpiWidth + 4, margin + (kpiWidth + 4) * 2];
+    const kpiLabels = ['Resultado General', 'Estabilidad', 'Mejora de Procesos'];
+    const kpiValues = [`${data.porcGeneral}%`, `${data.porcEstabilidad}%`, `${data.porcMejora}%`];
+    pdf.setFillColor(15, 43, 94); // azul oscuro
+    for (let i = 0; i < 3; i++) {
+      pdf.rect(kpiX[i], y, kpiWidth, 20, 'F');
+      pdf.setFontSize(8);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(kpiLabels[i], kpiX[i] + kpiWidth/2, y + 7, { align: 'center' });
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(kpiValues[i], kpiX[i] + kpiWidth/2, y + 17, { align: 'center' });
+      pdf.setFont('helvetica', 'normal');
+    }
+    pdf.setTextColor(0, 0, 0);
+    y += 24;
+
+    // Gráficos: radar y barra horizontal lado a lado
     const radarCanvas = document.getElementById('radarChart');
     const barCanvas = document.getElementById('horizontalBarChart');
     if (radarCanvas && barCanvas) {
       const radarImg = radarCanvas.toDataURL('image/png');
       const barImg = barCanvas.toDataURL('image/png');
-      const imgWidth = 85;
-      const imgHeight = 85;
-      // Calcular espacio disponible en la página
-      addNewPageIfNeeded(imgHeight + 20);
-      // Posicionar gráficos uno al lado del otro
+      const imgWidth = (pageWidth - margin * 2 - 8) / 2;
+      const imgHeight = 75; // reducido para que quepa todo
+      addNewPageIfNeeded(imgHeight + 15);
       pdf.addImage(radarImg, 'PNG', margin, y, imgWidth, imgHeight);
-      pdf.addImage(barImg, 'PNG', pageWidth - margin - imgWidth, y, imgWidth, imgHeight);
+      pdf.addImage(barImg, 'PNG', margin + imgWidth + 4, y, imgWidth, imgHeight);
       y += imgHeight + 5;
-      // Etiquetas debajo de cada gráfico
       pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'normal');
       pdf.text('Cumplimiento por Elemento', margin + imgWidth/2, y, { align: 'center' });
-      pdf.text('Cumplimiento por Elemento (Sí/No)', pageWidth - margin - imgWidth/2, y, { align: 'center' });
+      pdf.text('Cumplimiento por Elemento (Sí/No)', margin + imgWidth + 4 + imgWidth/2, y, { align: 'center' });
       y += 10;
     }
 
-    // --- Páginas siguientes: Preguntas agrupadas por elemento ---
+    // ========== PÁGINAS SIGUIENTES: Preguntas agrupadas ==========
     const preguntasPorElemento = {};
     preguntas.forEach(p => {
       if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = [];
@@ -1180,25 +1154,27 @@
         styles: { fontSize: 8, cellPadding: 2, lineColor: [200,200,200], lineWidth: 0.1 },
         headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
         columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 120 }, 2: { cellWidth: 25 } },
-        margin: { left: margin, right: margin }
+        margin: { left: margin, right: margin },
+        tableWidth: pageWidth - margin * 2
       });
       y = pdf.lastAutoTable.finalY + 3;
     }
 
-    // --- Firmas al final de la última página (no en página aparte) ---
-    addNewPageIfNeeded(20);
+    // ========== FIRMAS al final de la última página ==========
+    addNewPageIfNeeded(25);
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('_______________________________', margin, y);
-    pdf.text(data.evaluador, margin + 20, y + 5);
-    pdf.text('Firma del Evaluador', margin, y + 10);
+    const firmaY = y;
+    pdf.line(margin, firmaY, margin + 50, firmaY);
+    pdf.text(data.evaluador, margin + 25, firmaY + 5, { align: 'center' });
+    pdf.text('Firma del Evaluador', margin + 25, firmaY + 10, { align: 'center' });
 
-    pdf.text('_______________________________', pageWidth - margin - 60, y);
-    pdf.text(data.representante, pageWidth - margin - 50, y + 5);
-    pdf.text('Firma del Representante', pageWidth - margin - 60, y + 10);
+    pdf.line(pageWidth - margin - 50, firmaY, pageWidth - margin, firmaY);
+    pdf.text(data.representante, pageWidth - margin - 25, firmaY + 5, { align: 'center' });
+    pdf.text('Firma del Representante', pageWidth - margin - 25, firmaY + 10, { align: 'center' });
 
-    const fechaFirma = new Date().toLocaleDateString('es-ES');
-    pdf.text(`Fecha de firma: ${fechaFirma}`, margin, y + 25);
+    pdf.setFontSize(8);
+    pdf.text(`Fecha de firma: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, firmaY + 20, { align: 'center' });
 
     pdf.save(`Evaluacion_Operativa_${data.empresa}_${data.fecha}.pdf`);
   }
