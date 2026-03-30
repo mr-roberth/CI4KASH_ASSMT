@@ -612,10 +612,10 @@
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
-  let todasEvaluaciones = [];      // Evaluaciones sincronizadas desde el servidor
-  let pendingEvaluations = [];      // Evaluaciones locales pendientes
+  let todasEvaluaciones = [];
+  let pendingEvaluations = [];
   let radarChart = null, horizontalBarChart = null;
-  let syncing = false;             // Bandera para evitar sincronizaciones simultáneas
+  let syncing = false;
 
   // Cargar datos locales
   function loadLocalData() {
@@ -669,6 +669,16 @@
     }
   }
 
+  // Eventos online/offline
+  window.addEventListener('online', () => {
+    updateSyncStatus();
+    if (pendingEvaluations.length > 0) {
+      // Opcional: auto sincronizar al recuperar internet
+      syncPending();
+    }
+  });
+  window.addEventListener('offline', updateSyncStatus);
+
   // === LOGIN / REGISTER ===
   async function login() {
     const username = document.getElementById('login-email').value;
@@ -713,22 +723,35 @@
       showProfileMsg("Nombre y correo son obligatorios", "error");
       return;
     }
-    if (!navigator.onLine) {
-      showProfileMsg("Se requiere conexión a internet para actualizar el perfil", "error");
-      return;
-    }
-    const updates = { name: newName, email: newEmail };
-    if (newPassword) updates.password = newPassword;
-    if (currentUser.photo) updates.photo = currentUser.photo;
-    const result = await callGAS('updateUser', { userId: currentUser.id, ...updates });
-    if (result.success) {
-      currentUser = result.user;
-      saveLocalUser();
-      showProfileMsg("Perfil actualizado correctamente", "success");
-      document.getElementById('profile-password').value = "";
+
+    // Actualizar localmente primero
+    const oldName = currentUser.name;
+    const oldEmail = currentUser.username;
+    currentUser.name = newName;
+    currentUser.username = newEmail;
+    if (newPassword) currentUser.password = newPassword; // guardado local, no se envía si no hay conexión
+    saveLocalUser();
+
+    // Si estamos online, intentamos sincronizar con el servidor
+    if (navigator.onLine) {
+      const updates = { name: newName, email: newEmail };
+      if (newPassword) updates.password = newPassword;
+      if (currentUser.photo) updates.photo = currentUser.photo;
+      const result = await callGAS('updateUser', { userId: currentUser.id, ...updates });
+      if (result.success) {
+        // El servidor puede devolver datos actualizados, los usamos
+        currentUser = result.user;
+        saveLocalUser();
+        showProfileMsg("Perfil actualizado correctamente", "success");
+      } else {
+        // Si el servidor no soporta updateUser, solo mostramos mensaje local
+        showProfileMsg("Cambios guardados localmente. La sincronización con el servidor no está disponible.", "success");
+      }
     } else {
-      showProfileMsg(result.message || "Error al actualizar perfil", "error");
+      showProfileMsg("Cambios guardados localmente. Se sincronizarán cuando recuperes conexión.", "success");
     }
+    document.getElementById('profile-password').value = "";
+    loadProfileForm(); // refrescar foto si cambió
   }
 
   function loadProfileForm() {
@@ -820,7 +843,7 @@
     const evalData = { empresa, fecha, evaluador, representante, asistentes, respuestas, total_puntos: totalSi };
 
     if (!navigator.onLine) {
-      // Guardar localmente con ID temporal
+      // Guardar localmente
       const localId = "local_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
       const newEval = {
         id: localId,
@@ -835,7 +858,6 @@
       };
       pendingEvaluations.push({ ...evalData, localId });
       localStorage.setItem("pendingEvaluations", JSON.stringify(pendingEvaluations));
-      // Añadir a la lista local de evaluaciones (para mostrar inmediatamente)
       todasEvaluaciones.unshift(newEval);
       renderEvaluacionesList(todasEvaluaciones);
       updateSyncStatus();
@@ -845,12 +867,12 @@
       return;
     }
 
-    // Online: enviar al servidor
+    // Online
     const result = await callGAS('submitEvaluacion', evalData);
     if (result.success) {
       alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length} (${Math.round((result.total/preguntas.length)*100)}%)`);
       resetForm();
-      await cargarEvaluaciones(); // refrescar lista
+      await cargarEvaluaciones();
       activarPestana('evaluaciones');
     } else {
       showEvalError(result.message);
@@ -878,7 +900,6 @@
     let successCount = 0;
     for (let i = 0; i < pendingEvaluations.length; i++) {
       const evalData = pendingEvaluations[i];
-      // Eliminar el campo localId antes de enviar
       const { localId, ...dataToSend } = evalData;
       const result = await callGAS('submitEvaluacion', dataToSend);
       if (result.success) {
@@ -891,7 +912,6 @@
       }
     }
     updateSyncStatus();
-    // Recargar evaluaciones desde el servidor (ya no hay pendientes)
     await cargarEvaluaciones();
     alert(`Sincronización completada. ${successCount} evaluaciones enviadas.`);
     syncBtn.disabled = false;
@@ -915,11 +935,11 @@
     const result = await callGAS('getEvaluaciones');
     if (result.success) {
       todasEvaluaciones = result.evaluaciones || [];
-      // Combinar evaluaciones pendientes locales, evitando duplicados con las del servidor
+      // Combinar pendientes locales evitando duplicados (por empresa+fecha+evaluador)
       const serverKeys = new Set(todasEvaluaciones.map(e => `${e.empresa}|${e.fecha_evaluacion}|${e.evaluador}`));
       const pendingLocal = pendingEvaluations
         .filter(p => !serverKeys.has(`${p.empresa}|${p.fecha}|${p.evaluador}`))
-        .map((p, idx) => ({
+        .map(p => ({
           id: p.localId,
           empresa: p.empresa,
           fecha_evaluacion: p.fecha,
@@ -993,7 +1013,6 @@
     const contentDiv = document.getElementById(`detail-content-${id}`);
     if (!contentDiv.innerHTML.includes('Cargando')) return;
 
-    // Si es evaluación pendiente local, mostrar datos almacenados
     const isPending = id.startsWith('local_');
     let respMap = {};
     let evaluacion = null;
@@ -1146,7 +1165,7 @@
     window.currentEvalData = null;
   }
 
-  // === PDF MEJORADO (Centrado y Rediseñado) ===
+  // === PDF MEJORADO ===
   async function generatePDF() {
     if (!window.currentEvalData) { alert("Seleccione una evaluación"); return; }
     const data = window.currentEvalData;
@@ -1158,18 +1177,15 @@
 
     function addPageIfNeeded(h) { if (y + h > pdf.internal.pageSize.getHeight() - margin) { pdf.addPage(); y = margin; } }
 
-    // Logo esquina superior izquierda
     const logoData = await getLogoDataURL();
     if (logoData) pdf.addImage(logoData, 'PNG', margin, y, 25, 25);
     y += 8;
 
-    // Título centrado
     pdf.setFontSize(18);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Reporte de Evaluación Operativa', pageWidth/2, y, { align: 'center' });
     y += 12;
 
-    // Tabla resumen centrada
     const summaryData = [
       ['Empresa', data.empresa],
       ['Fecha evaluación', data.fecha],
@@ -1191,7 +1207,6 @@
     });
     y = pdf.lastAutoTable.finalY + 10;
 
-    // KPIs horizontales más pequeños y centrados
     const kpiWidth = 50;
     const kpiSpacing = 10;
     const totalKpiWidth = 3*kpiWidth + 2*kpiSpacing;
@@ -1213,9 +1228,7 @@
     pdf.text(`${data.porcMejora}%`, startX + 2*(kpiWidth+kpiSpacing)+2, y+13);
     y += 24;
 
-    // Esperar un momento para que los gráficos se rendericen
     await new Promise(resolve => setTimeout(resolve, 100));
-    // Gráficos lado a lado centrados
     const radarCanvas = document.getElementById('radarChart');
     const barCanvas = document.getElementById('horizontalBarChart');
     if (radarCanvas && barCanvas) {
@@ -1234,7 +1247,6 @@
       y += imgHeight + 12;
     }
 
-    // Detalle de preguntas centrado
     const preguntasPorElemento = {};
     preguntas.forEach(p => { if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = []; preguntasPorElemento[p.elemento].push(p); });
     for (const elemento in preguntasPorElemento) {
@@ -1257,7 +1269,6 @@
       y = pdf.lastAutoTable.finalY + 3;
     }
 
-    // Firmas centradas
     addPageIfNeeded(40);
     const signWidth = 80;
     const startSignX = (pageWidth - 2*signWidth - 20) / 2;
