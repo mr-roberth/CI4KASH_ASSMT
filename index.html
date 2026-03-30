@@ -209,7 +209,6 @@
       flex-wrap: wrap;
       gap: 0.8rem;
     }
-    /* Tablas y formularios de preguntas */
     .evaluation-table-wrapper {
       overflow-x: auto;
       margin: 1rem 0;
@@ -290,7 +289,6 @@
       flex: 1;
       min-width: 130px;
     }
-    /* Dashboard layout */
     .dashboard-row {
       display: flex;
       flex-wrap: wrap;
@@ -358,7 +356,6 @@
       object-fit: cover;
       border: 2px solid var(--secondary);
     }
-    /* Detalle de preguntas colapsable */
     .element-group {
       margin-bottom: 1rem;
       border: 1px solid var(--border);
@@ -444,6 +441,15 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+    .pending-badge {
+      background-color: #f97316;
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 12px;
+      margin-left: 8px;
+      display: inline-block;
     }
     @media (max-width: 768px) {
       .app-container { padding: 0.8rem; }
@@ -610,9 +616,9 @@
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
-  let todasEvaluaciones = [];
+  let todasEvaluaciones = [];      // Evaluaciones sincronizadas desde el servidor
+  let pendingEvaluations = [];      // Evaluaciones locales pendientes
   let radarChart = null, horizontalBarChart = null;
-  let pendingEvaluations = [];
 
   // Cargar datos locales
   function loadLocalData() {
@@ -653,27 +659,6 @@
       statusEl.style.background = "#e0f2e9";
     }
   }
-
-  async function syncPending() {
-    if (!navigator.onLine) return;
-    if (pendingEvaluations.length === 0) return;
-    for (let i = 0; i < pendingEvaluations.length; i++) {
-      const evalData = pendingEvaluations[i];
-      const result = await callGAS('submitEvaluacion', evalData);
-      if (result.success) {
-        pendingEvaluations.splice(i, 1);
-        i--;
-        localStorage.setItem("pendingEvaluations", JSON.stringify(pendingEvaluations));
-        updateSyncStatus();
-      } else {
-        console.warn("Error al sincronizar evaluación", result.message);
-      }
-    }
-    cargarEvaluaciones();
-  }
-
-  window.addEventListener('online', () => { syncPending(); updateSyncStatus(); });
-  window.addEventListener('offline', updateSyncStatus);
 
   async function callGAS(action, data = {}) {
     data.action = action;
@@ -729,6 +714,10 @@
     const newPassword = document.getElementById('profile-password').value;
     if (!newName || !newEmail) {
       showProfileMsg("Nombre y correo son obligatorios", "error");
+      return;
+    }
+    if (!navigator.onLine) {
+      showProfileMsg("Se requiere conexión a internet para actualizar el perfil", "error");
       return;
     }
     const updates = { name: newName, email: newEmail };
@@ -790,18 +779,18 @@
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
         html += `<div class="sub-section">${elemento}</div>`;
-        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead> <th>No.</th><th>Criterio</th><th>Respuesta</th> </thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
           html += `<tr>
-                      <td>${p.num}</td>
-                      <td>${p.criterio}</td>
-                      <td><div class="radio-group">
+                       <td>${p.num}</td>
+                       <td>${p.criterio}</td>
+                       <td><div class="radio-group">
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                    </tr>`;
+                     </tr>`;
         });
         html += `</tbody></table></div>`;
       }
@@ -828,24 +817,81 @@
       return;
     }
     const respuestas = preguntas.map(p => ({ num: p.num, respuesta: respuestasSeleccionadas[p.num] || 'No' }));
-    const evalData = { empresa, fecha, evaluador, representante, asistentes, respuestas };
+    const totalSi = respuestas.filter(r => r.respuesta === 'Sí').length;
+    const porcentaje = Math.round((totalSi / preguntas.length) * 100);
+
+    const evalData = { empresa, fecha, evaluador, representante, asistentes, respuestas, total_puntos: totalSi };
+
     if (!navigator.onLine) {
-      pendingEvaluations.push(evalData);
+      // Guardar localmente con ID temporal
+      const localId = "local_" + Date.now();
+      const newEval = {
+        id: localId,
+        empresa,
+        fecha_evaluacion: fecha,
+        evaluador,
+        representante,
+        asistentes,
+        total_puntos: totalSi,
+        created_at: new Date().toISOString(),
+        pending: true
+      };
+      pendingEvaluations.push({ ...evalData, localId });
       localStorage.setItem("pendingEvaluations", JSON.stringify(pendingEvaluations));
+      // Añadir a la lista local de evaluaciones (para mostrar inmediatamente)
+      todasEvaluaciones.unshift(newEval);
+      renderEvaluacionesList(todasEvaluaciones);
       updateSyncStatus();
-      alert("Evaluación guardada localmente. Se sincronizará cuando recuperes internet.");
+      alert(`✅ Evaluación guardada localmente. Puntaje: ${totalSi} / ${preguntas.length} (${porcentaje}%). Se sincronizará cuando recuperes internet.`);
       resetForm();
       activarPestana('evaluaciones');
       return;
     }
+
+    // Online: enviar al servidor
     const result = await callGAS('submitEvaluacion', evalData);
     if (result.success) {
-      alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length}`);
+      alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length} (${Math.round((result.total/preguntas.length)*100)}%)`);
       resetForm();
+      await cargarEvaluaciones(); // refrescar lista
       activarPestana('evaluaciones');
     } else {
       showEvalError(result.message);
     }
+  }
+
+  async function syncPending() {
+    if (!navigator.onLine) {
+      alert("No hay conexión a internet. Conéctate y vuelve a intentar.");
+      return;
+    }
+    if (pendingEvaluations.length === 0) {
+      alert("No hay evaluaciones pendientes de sincronizar.");
+      return;
+    }
+    const syncBtn = document.getElementById('sync-now-btn');
+    syncBtn.disabled = true;
+    syncBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
+    let successCount = 0;
+    for (let i = 0; i < pendingEvaluations.length; i++) {
+      const evalData = pendingEvaluations[i];
+      // Eliminar el campo localId antes de enviar
+      const { localId, ...dataToSend } = evalData;
+      const result = await callGAS('submitEvaluacion', dataToSend);
+      if (result.success) {
+        successCount++;
+        pendingEvaluations.splice(i, 1);
+        i--;
+        localStorage.setItem("pendingEvaluations", JSON.stringify(pendingEvaluations));
+      } else {
+        console.warn("Error al sincronizar evaluación", result.message);
+      }
+    }
+    updateSyncStatus();
+    await cargarEvaluaciones(); // refrescar lista con datos del servidor
+    alert(`Sincronización completada. ${successCount} evaluaciones enviadas.`);
+    syncBtn.disabled = false;
+    syncBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Sincronizar ahora';
   }
 
   // === EVALUACIONES ===
@@ -855,7 +901,20 @@
     if (preguntas.length === 0) setTimeout(() => cargarEvaluaciones(), 500);
     const result = await callGAS('getEvaluaciones');
     if (result.success) {
-      todasEvaluaciones = result.evaluaciones;
+      todasEvaluaciones = result.evaluaciones || [];
+      // Combinar evaluaciones pendientes locales (para mostrar en lista)
+      const pendingLocal = pendingEvaluations.map((p, idx) => ({
+        id: p.localId,
+        empresa: p.empresa,
+        fecha_evaluacion: p.fecha,
+        evaluador: p.evaluador,
+        representante: p.representante,
+        asistentes: p.asistentes,
+        total_puntos: p.total_puntos,
+        created_at: new Date().toISOString(),
+        pending: true
+      }));
+      todasEvaluaciones = [...pendingLocal, ...todasEvaluaciones];
       poblarFiltrosEvaluaciones(todasEvaluaciones);
       aplicarFiltrosEvaluaciones();
     } else {
@@ -894,13 +953,14 @@
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
+      const pendingBadge = e.pending ? '<span class="pending-badge">Pendiente</span>' : '';
       html += `<tr id="eval-row-${e.id}">
-                  <td>${escapeHtml(e.empresa || '')}</td>
-                  <td>${e.fecha_evaluacion || ''}</td>
-                  <td>${escapeHtml(e.evaluador || '')}</td>
-                  <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
-                  <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
-                </tr>
+                   <td>${escapeHtml(e.empresa || '')} ${pendingBadge}</td>
+                   <td>${e.fecha_evaluacion || ''}</td>
+                   <td>${escapeHtml(e.evaluador || '')}</td>
+                   <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                   <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
+                 </tr>
                 <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando detalle...</div></td></tr>`;
     });
     html += `</tbody></table>`;
@@ -916,35 +976,59 @@
     detailRow.classList.add('show');
     const contentDiv = document.getElementById(`detail-content-${id}`);
     if (!contentDiv.innerHTML.includes('Cargando')) return;
-    const result = await callGAS('getEvaluacionDetalle', { id });
-    if (result.success) {
-      const evaluacion = result.evaluacion;
-      const respuestas = result.respuestas;
-      const respMap = {};
-      respuestas.forEach(r => respMap[r.num] = r.respuesta);
-      let html = `<div><strong>Empresa:</strong> ${evaluacion.empresa}<br><strong>Fecha:</strong> ${evaluacion.fecha_evaluacion}<br><strong>Evaluador:</strong> ${evaluacion.evaluador}<br><strong>Representante:</strong> ${evaluacion.representante}<br><strong>Asistentes:</strong> ${evaluacion.asistentes}<br><strong>Total puntos:</strong> ${evaluacion.total_puntos} / ${preguntas.length}</div>`;
-      const grouped = {};
-      preguntas.forEach(p => {
-        if (!grouped[p.pilar]) grouped[p.pilar] = {};
-        if (!grouped[p.pilar][p.elemento]) grouped[p.pilar][p.elemento] = [];
-        grouped[p.pilar][p.elemento].push(p);
-      });
-      for (const pilar in grouped) {
-        html += `<div class="section-title">${pilar}</div>`;
-        for (const elemento in grouped[pilar]) {
-          html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
-          grouped[pilar][elemento].forEach(p => {
-            const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
-            const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
-            html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
-          });
-          html += `</tbody></table></div>`;
-        }
+
+    // Si es evaluación pendiente local, mostrar datos almacenados
+    const isPending = id.startsWith('local_');
+    let respMap = {};
+    let evaluacion = null;
+    if (isPending) {
+      const pending = pendingEvaluations.find(p => p.localId === id);
+      if (pending) {
+        evaluacion = {
+          empresa: pending.empresa,
+          fecha_evaluacion: pending.fecha,
+          evaluador: pending.evaluador,
+          representante: pending.representante,
+          asistentes: pending.asistentes,
+          total_puntos: pending.total_puntos
+        };
+        pending.respuestas.forEach(r => respMap[r.num] = r.respuesta);
       }
-      contentDiv.innerHTML = html;
     } else {
-      contentDiv.innerHTML = `<div class="alert alert-error">Error al cargar detalle</div>`;
+      const result = await callGAS('getEvaluacionDetalle', { id });
+      if (result.success) {
+        evaluacion = result.evaluacion;
+        result.respuestas.forEach(r => respMap[r.num] = r.respuesta);
+      } else {
+        contentDiv.innerHTML = `<div class="alert alert-error">Error al cargar detalle</div>`;
+        return;
+      }
     }
+    if (!evaluacion) {
+      contentDiv.innerHTML = `<div class="alert alert-error">No se pudo cargar el detalle</div>`;
+      return;
+    }
+
+    let html = `<div><strong>Empresa:</strong> ${evaluacion.empresa}<br><strong>Fecha:</strong> ${evaluacion.fecha_evaluacion}<br><strong>Evaluador:</strong> ${evaluacion.evaluador}<br><strong>Representante:</strong> ${evaluacion.representante}<br><strong>Asistentes:</strong> ${evaluacion.asistentes}<br><strong>Total puntos:</strong> ${evaluacion.total_puntos} / ${preguntas.length}</div>`;
+    const grouped = {};
+    preguntas.forEach(p => {
+      if (!grouped[p.pilar]) grouped[p.pilar] = {};
+      if (!grouped[p.pilar][p.elemento]) grouped[p.pilar][p.elemento] = [];
+      grouped[p.pilar][p.elemento].push(p);
+    });
+    for (const pilar in grouped) {
+      html += `<div class="section-title">${pilar}</div>`;
+      for (const elemento in grouped[pilar]) {
+        html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+        grouped[pilar][elemento].forEach(p => {
+          const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
+          const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
+          html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+      }
+    }
+    contentDiv.innerHTML = html;
   };
 
   // === DASHBOARD ===
@@ -953,7 +1037,7 @@
     select.innerHTML = '<option>Cargando...</option>';
     const result = await callGAS('getEvaluaciones');
     if (!result.success) { select.innerHTML = '<option>Error</option>'; return; }
-    todasEvaluaciones = result.evaluaciones;
+    todasEvaluaciones = result.evaluaciones || [];
     select.innerHTML = '<option value="">-- Selecciona una evaluación --</option>';
     todasEvaluaciones.forEach(e => {
       select.innerHTML += `<option value="${e.id}">${e.empresa} - ${e.fecha_evaluacion} (${e.evaluador})</option>`;
@@ -1222,14 +1306,14 @@
   };
   document.getElementById('clear-photo-btn').onclick = () => { delete currentUser.photo; saveLocalUser(); document.getElementById('profile-photo-img').src = "logo_c4.png"; document.getElementById('user-avatar').src = "logo_c4.png"; };
   document.getElementById('delete-account-btn').onclick = async () => {
-    if (confirm("¿Estás seguro de eliminar tu cuenta? Esta acción es irreversible.")) {
-      const result = await callGAS('deleteUser', { userId: currentUser.id });
-      if (result.success) {
-        localStorage.removeItem("currentUser");
-        alert("Cuenta eliminada.");
-        location.reload();
-      } else alert("Error al eliminar cuenta: " + result.message);
-    }
+    if (!confirm("¿Estás seguro de eliminar tu cuenta? Esta acción es irreversible.")) return;
+    if (!navigator.onLine) { alert("Se requiere conexión a internet para eliminar la cuenta."); return; }
+    const result = await callGAS('deleteUser', { userId: currentUser.id });
+    if (result.success) {
+      localStorage.removeItem("currentUser");
+      alert("Cuenta eliminada.");
+      location.reload();
+    } else alert("Error al eliminar cuenta: " + result.message);
   };
   document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => activarPestana(btn.getAttribute('data-tab'))));
 
