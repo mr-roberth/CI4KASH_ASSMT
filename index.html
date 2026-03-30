@@ -167,6 +167,11 @@
       background: var(--primary-dark);
       transform: translateY(-1px);
     }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
     .btn-secondary {
       background: #64748b;
     }
@@ -306,6 +311,7 @@
       text-align: center;
       border-top: 4px solid #FA740F;
       color: white;
+      box-shadow: var(--shadow);
     }
     .kpi-value {
       font-size: 2rem;
@@ -669,13 +675,9 @@
     }
   }
 
-  // Eventos online/offline
   window.addEventListener('online', () => {
     updateSyncStatus();
-    if (pendingEvaluations.length > 0) {
-      // Opcional: auto sincronizar al recuperar internet
-      syncPending();
-    }
+    if (pendingEvaluations.length > 0) syncPending();
   });
   window.addEventListener('offline', updateSyncStatus);
 
@@ -725,33 +727,28 @@
     }
 
     // Actualizar localmente primero
-    const oldName = currentUser.name;
-    const oldEmail = currentUser.username;
     currentUser.name = newName;
     currentUser.username = newEmail;
-    if (newPassword) currentUser.password = newPassword; // guardado local, no se envía si no hay conexión
+    if (newPassword) currentUser.password = newPassword;
     saveLocalUser();
 
-    // Si estamos online, intentamos sincronizar con el servidor
     if (navigator.onLine) {
       const updates = { name: newName, email: newEmail };
       if (newPassword) updates.password = newPassword;
       if (currentUser.photo) updates.photo = currentUser.photo;
       const result = await callGAS('updateUser', { userId: currentUser.id, ...updates });
       if (result.success) {
-        // El servidor puede devolver datos actualizados, los usamos
         currentUser = result.user;
         saveLocalUser();
         showProfileMsg("Perfil actualizado correctamente", "success");
       } else {
-        // Si el servidor no soporta updateUser, solo mostramos mensaje local
         showProfileMsg("Cambios guardados localmente. La sincronización con el servidor no está disponible.", "success");
       }
     } else {
       showProfileMsg("Cambios guardados localmente. Se sincronizarán cuando recuperes conexión.", "success");
     }
     document.getElementById('profile-password').value = "";
-    loadProfileForm(); // refrescar foto si cambió
+    loadProfileForm();
   }
 
   function loadProfileForm() {
@@ -810,7 +807,7 @@
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                      </tr>`;
+                       </tr>`;
         });
         html += `</tbody></table></div>`;
       }
@@ -836,14 +833,18 @@
       showEvalError("Completa los campos obligatorios");
       return;
     }
+
+    const submitBtn = document.getElementById('submit-evaluation');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
     const respuestas = preguntas.map(p => ({ num: p.num, respuesta: respuestasSeleccionadas[p.num] || 'No' }));
     const totalSi = respuestas.filter(r => r.respuesta === 'Sí').length;
     const porcentaje = Math.round((totalSi / preguntas.length) * 100);
-
     const evalData = { empresa, fecha, evaluador, representante, asistentes, respuestas, total_puntos: totalSi };
 
     if (!navigator.onLine) {
-      // Guardar localmente
       const localId = "local_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
       const newEval = {
         id: localId,
@@ -864,10 +865,11 @@
       alert(`✅ Evaluación guardada localmente. Puntaje: ${totalSi} / ${preguntas.length} (${porcentaje}%). Se sincronizará cuando recuperes internet.`);
       resetForm();
       activarPestana('evaluaciones');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
       return;
     }
 
-    // Online
     const result = await callGAS('submitEvaluacion', evalData);
     if (result.success) {
       alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length} (${Math.round((result.total/preguntas.length)*100)}%)`);
@@ -877,6 +879,8 @@
     } else {
       showEvalError(result.message);
     }
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
   }
 
   async function syncPending() {
@@ -935,7 +939,6 @@
     const result = await callGAS('getEvaluaciones');
     if (result.success) {
       todasEvaluaciones = result.evaluaciones || [];
-      // Combinar pendientes locales evitando duplicados (por empresa+fecha+evaluador)
       const serverKeys = new Set(todasEvaluaciones.map(e => `${e.empresa}|${e.fecha_evaluacion}|${e.evaluador}`));
       const pendingLocal = pendingEvaluations
         .filter(p => !serverKeys.has(`${p.empresa}|${p.fecha}|${p.evaluador}`))
@@ -1186,15 +1189,13 @@
     pdf.text('Reporte de Evaluación Operativa', pageWidth/2, y, { align: 'center' });
     y += 12;
 
+    // Tabla resumen (sin KPIs)
     const summaryData = [
       ['Empresa', data.empresa],
       ['Fecha evaluación', data.fecha],
       ['Evaluador', data.evaluador],
       ['Representante', data.representante],
-      ['Asistentes', data.asistentes || 'Ninguno'],
-      ['Resultado General', `${data.porcGeneral}%`],
-      ['Estabilidad', `${data.porcEstabilidad}%`],
-      ['Mejora de Procesos', `${data.porcMejora}%`]
+      ['Asistentes', data.asistentes || 'Ninguno']
     ];
     pdf.autoTable({
       startY: y,
@@ -1207,27 +1208,34 @@
     });
     y = pdf.lastAutoTable.finalY + 10;
 
+    // KPIs horizontales centrados (mismo estilo que dashboard)
     const kpiWidth = 50;
     const kpiSpacing = 10;
     const totalKpiWidth = 3*kpiWidth + 2*kpiSpacing;
     const startX = (pageWidth - totalKpiWidth) / 2;
-    pdf.setFillColor(31,58,138);
-    pdf.rect(startX, y, kpiWidth, 18, 'F');
+    
+    // Función para dibujar tarjeta KPI con bordes redondeados
+    function drawRoundedRect(x, y, w, h, r, fillColor) {
+      pdf.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+      pdf.roundedRect(x, y, w, h, r, r, 'F');
+    }
+    drawRoundedRect(startX, y, kpiWidth, 22, 4, [31,58,138]);
     pdf.setTextColor(255);
     pdf.setFontSize(9);
     pdf.text("General", startX+2, y+6);
     pdf.setFontSize(14);
-    pdf.text(`${data.porcGeneral}%`, startX+2, y+13);
-    pdf.setFillColor(31,58,138);
-    pdf.rect(startX + kpiWidth + kpiSpacing, y, kpiWidth, 18, 'F');
+    pdf.text(`${data.porcGeneral}%`, startX+2, y+16);
+    
+    drawRoundedRect(startX + kpiWidth + kpiSpacing, y, kpiWidth, 22, 4, [31,58,138]);
     pdf.text("Estabilidad", startX + kpiWidth + kpiSpacing +2, y+6);
-    pdf.text(`${data.porcEstabilidad}%`, startX + kpiWidth + kpiSpacing +2, y+13);
-    pdf.setFillColor(31,58,138);
-    pdf.rect(startX + 2*(kpiWidth+kpiSpacing), y, kpiWidth, 18, 'F');
+    pdf.text(`${data.porcEstabilidad}%`, startX + kpiWidth + kpiSpacing +2, y+16);
+    
+    drawRoundedRect(startX + 2*(kpiWidth+kpiSpacing), y, kpiWidth, 22, 4, [31,58,138]);
     pdf.text("Mejora", startX + 2*(kpiWidth+kpiSpacing)+2, y+6);
-    pdf.text(`${data.porcMejora}%`, startX + 2*(kpiWidth+kpiSpacing)+2, y+13);
-    y += 24;
+    pdf.text(`${data.porcMejora}%`, startX + 2*(kpiWidth+kpiSpacing)+2, y+16);
+    y += 28;
 
+    // Gráficos
     await new Promise(resolve => setTimeout(resolve, 100));
     const radarCanvas = document.getElementById('radarChart');
     const barCanvas = document.getElementById('horizontalBarChart');
@@ -1247,6 +1255,7 @@
       y += imgHeight + 12;
     }
 
+    // Detalle de preguntas
     const preguntasPorElemento = {};
     preguntas.forEach(p => { if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = []; preguntasPorElemento[p.elemento].push(p); });
     for (const elemento in preguntasPorElemento) {
@@ -1269,6 +1278,7 @@
       y = pdf.lastAutoTable.finalY + 3;
     }
 
+    // Firmas
     addPageIfNeeded(40);
     const signWidth = 80;
     const startSignX = (pageWidth - 2*signWidth - 20) / 2;
