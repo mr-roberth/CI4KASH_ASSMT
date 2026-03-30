@@ -618,8 +618,8 @@
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
-  let todasEvaluaciones = [];
-  let pendingEvaluations = [];
+  let todasEvaluaciones = [];      // Lista combinada (servidor + locales)
+  let pendingEvaluations = [];      // Evaluaciones pendientes de sincronizar (solo las que aún no están en servidor)
   let radarChart = null, horizontalBarChart = null;
   let syncing = false;
 
@@ -635,7 +635,7 @@
         document.getElementById('login-view').classList.add('hidden');
         document.getElementById('main-view').classList.remove('hidden');
         loadPreguntas();
-        cargarEvaluaciones();
+        cargarEvaluacionesLocales(); // Cargar lista combinada
       } catch(e) {}
     }
     const storedPending = localStorage.getItem("pendingEvaluations");
@@ -690,7 +690,7 @@
       currentUser = result.user;
       saveLocalUser();
       await loadPreguntas();
-      await cargarEvaluaciones();
+      await cargarEvaluacionesLocales(); // Cargar desde servidor y combinar con locales
       document.getElementById('login-view').classList.add('hidden');
       document.getElementById('main-view').classList.remove('hidden');
       document.getElementById('user-info').classList.remove('hidden');
@@ -731,12 +731,13 @@
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
 
-    // Actualizar localmente primero
+    // Guardar cambios localmente primero
     const oldName = currentUser.name;
     const oldEmail = currentUser.username;
     currentUser.name = newName;
     currentUser.username = newEmail;
     if (newPassword) currentUser.password = newPassword;
+    if (currentUser.photo) currentUser.photo = currentUser.photo; // mantener foto
     saveLocalUser();
 
     // Si estamos online, intentamos sincronizar con el servidor
@@ -750,6 +751,7 @@
         saveLocalUser();
         showProfileMsg("Perfil actualizado correctamente", "success");
       } else {
+        // El servidor no soporta updateUser, mostramos mensaje y mantenemos local
         showProfileMsg("Cambios guardados localmente. La sincronización con el servidor no está disponible.", "success");
       }
     } else {
@@ -817,7 +819,7 @@
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                      </tr>`;
+                       </tr>`;
         });
         html += `</tbody></table></div>`;
       }
@@ -865,12 +867,17 @@
         asistentes,
         total_puntos: totalSi,
         created_at: new Date().toISOString(),
-        pending: true
+        pending: true,
+        respuestas: respuestas  // guardar respuestas para offline detalle
       };
       pendingEvaluations.push({ ...evalData, localId });
       localStorage.setItem("pendingEvaluations", JSON.stringify(pendingEvaluations));
-      todasEvaluaciones.unshift(newEval);
-      renderEvaluacionesList(todasEvaluaciones);
+      // Guardar en el cache local de evaluaciones
+      let allEvaluations = JSON.parse(localStorage.getItem("allEvaluations") || "[]");
+      allEvaluations.unshift(newEval);
+      localStorage.setItem("allEvaluations", JSON.stringify(allEvaluations));
+      // Actualizar lista combinada
+      await cargarEvaluacionesLocales();
       updateSyncStatus();
       alert(`✅ Evaluación guardada localmente. Puntaje: ${totalSi} / ${preguntas.length} (${porcentaje}%). Se sincronizará cuando recuperes internet.`);
       resetForm();
@@ -880,11 +887,28 @@
       return;
     }
 
+    // Online: enviar al servidor
     const result = await callGAS('submitEvaluacion', evalData);
     if (result.success) {
       alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length} (${Math.round((result.total/preguntas.length)*100)}%)`);
+      // Guardar localmente también para offline
+      const newEval = {
+        id: result.id,
+        empresa,
+        fecha_evaluacion: fecha,
+        evaluador,
+        representante,
+        asistentes,
+        total_puntos: result.total,
+        created_at: new Date().toISOString(),
+        pending: false,
+        respuestas: respuestas
+      };
+      let allEvaluations = JSON.parse(localStorage.getItem("allEvaluations") || "[]");
+      allEvaluations.unshift(newEval);
+      localStorage.setItem("allEvaluations", JSON.stringify(allEvaluations));
       resetForm();
-      await cargarEvaluaciones();
+      await cargarEvaluacionesLocales();
       activarPestana('evaluaciones');
     } else {
       showEvalError(result.message);
@@ -918,6 +942,18 @@
       const result = await callGAS('submitEvaluacion', dataToSend);
       if (result.success) {
         successCount++;
+        // Reemplazar la evaluación local en el cache con la sincronizada
+        let allEvaluations = JSON.parse(localStorage.getItem("allEvaluations") || "[]");
+        const index = allEvaluations.findIndex(e => e.id === localId);
+        if (index !== -1) {
+          allEvaluations[index] = {
+            ...allEvaluations[index],
+            id: result.id,
+            pending: false,
+            total_puntos: result.total
+          };
+          localStorage.setItem("allEvaluations", JSON.stringify(allEvaluations));
+        }
         pendingEvaluations.splice(i, 1);
         i--;
         localStorage.setItem("pendingEvaluations", JSON.stringify(pendingEvaluations));
@@ -926,7 +962,7 @@
       }
     }
     updateSyncStatus();
-    await cargarEvaluaciones();
+    await cargarEvaluacionesLocales();
     alert(`Sincronización completada. ${successCount} evaluaciones enviadas.`);
     syncBtn.disabled = false;
     syncBtn.innerHTML = originalText;
@@ -934,41 +970,40 @@
   }
 
   // === EVALUACIONES ===
-  async function cargarEvaluaciones() {
-    const container = document.getElementById('evaluaciones-list-container');
-    container.innerHTML = '<div class="loader"></div> Cargando evaluaciones...';
-    if (preguntas.length === 0) {
-      const wait = setInterval(() => {
-        if (preguntas.length > 0) {
-          clearInterval(wait);
-          cargarEvaluaciones();
-        }
-      }, 500);
-      return;
+  async function cargarEvaluacionesLocales() {
+    // Primero cargar desde servidor si hay conexión
+    let serverEvaluations = [];
+    if (navigator.onLine) {
+      const result = await callGAS('getEvaluaciones');
+      if (result.success) {
+        serverEvaluations = result.evaluaciones || [];
+        // Guardar en localStorage para offline
+        localStorage.setItem("allEvaluations", JSON.stringify(serverEvaluations));
+      } else {
+        console.warn("Error al obtener evaluaciones del servidor", result.message);
+      }
     }
-    const result = await callGAS('getEvaluaciones');
-    if (result.success) {
-      todasEvaluaciones = result.evaluaciones || [];
-      const serverKeys = new Set(todasEvaluaciones.map(e => `${e.empresa}|${e.fecha_evaluacion}|${e.evaluador}`));
-      const pendingLocal = pendingEvaluations
-        .filter(p => !serverKeys.has(`${p.empresa}|${p.fecha}|${p.evaluador}`))
-        .map(p => ({
-          id: p.localId,
-          empresa: p.empresa,
-          fecha_evaluacion: p.fecha,
-          evaluador: p.evaluador,
-          representante: p.representante,
-          asistentes: p.asistentes,
-          total_puntos: p.total_puntos,
-          created_at: new Date().toISOString(),
-          pending: true
-        }));
-      todasEvaluaciones = [...pendingLocal, ...todasEvaluaciones];
-      poblarFiltrosEvaluaciones(todasEvaluaciones);
-      aplicarFiltrosEvaluaciones();
-    } else {
-      container.innerHTML = `<div class="alert alert-error">Error: ${result.message}</div>`;
-    }
+    // Cargar desde localStorage (incluye las que ya estaban)
+    let allEvaluations = JSON.parse(localStorage.getItem("allEvaluations") || "[]");
+    // Combinar con pendientes (que no estén ya en allEvaluations)
+    const serverIds = new Set(allEvaluations.map(e => e.id));
+    const pendingLocal = pendingEvaluations
+      .filter(p => !serverIds.has(p.localId))
+      .map(p => ({
+        id: p.localId,
+        empresa: p.empresa,
+        fecha_evaluacion: p.fecha,
+        evaluador: p.evaluador,
+        representante: p.representante,
+        asistentes: p.asistentes,
+        total_puntos: p.total_puntos,
+        created_at: new Date().toISOString(),
+        pending: true,
+        respuestas: p.respuestas
+      }));
+    todasEvaluaciones = [...pendingLocal, ...allEvaluations];
+    poblarFiltrosEvaluaciones(todasEvaluaciones);
+    aplicarFiltrosEvaluaciones();
   }
 
   function poblarFiltrosEvaluaciones(evaluaciones) {
@@ -1043,12 +1078,28 @@
         pending.respuestas.forEach(r => respMap[r.num] = r.respuesta);
       }
     } else {
-      const result = await callGAS('getEvaluacionDetalle', { id });
-      if (result.success) {
-        evaluacion = result.evaluacion;
-        result.respuestas.forEach(r => respMap[r.num] = r.respuesta);
+      // Buscar en cache local primero
+      const cached = todasEvaluaciones.find(e => e.id === id);
+      if (cached && cached.respuestas) {
+        evaluacion = cached;
+        cached.respuestas.forEach(r => respMap[r.num] = r.respuesta);
+      } else if (navigator.onLine) {
+        const result = await callGAS('getEvaluacionDetalle', { id });
+        if (result.success) {
+          evaluacion = result.evaluacion;
+          result.respuestas.forEach(r => respMap[r.num] = r.respuesta);
+          // Guardar en cache local
+          let allEvals = JSON.parse(localStorage.getItem("allEvaluations") || "[]");
+          const idx = allEvals.findIndex(e => e.id === id);
+          if (idx !== -1) allEvals[idx].respuestas = result.respuestas;
+          else allEvals.push({ ...evaluacion, respuestas: result.respuestas });
+          localStorage.setItem("allEvaluations", JSON.stringify(allEvals));
+        } else {
+          contentDiv.innerHTML = `<div class="alert alert-error">Error al cargar detalle</div>`;
+          return;
+        }
       } else {
-        contentDiv.innerHTML = `<div class="alert alert-error">Error al cargar detalle</div>`;
+        contentDiv.innerHTML = `<div class="alert alert-error">No hay conexión y los datos no están disponibles localmente.</div>`;
         return;
       }
     }
@@ -1082,10 +1133,16 @@
   // === DASHBOARD ===
   async function cargarDashboard() {
     const select = document.getElementById('dashboard-eval-select');
-    select.innerHTML = '<option>Cargando...</option>';
-    const result = await callGAS('getEvaluaciones');
-    if (!result.success) { select.innerHTML = '<option>Error</option>'; return; }
-    const evaluaciones = result.evaluaciones || [];
+    // Cargar desde localStorage primero (incluye todas las evaluaciones locales)
+    let evaluaciones = JSON.parse(localStorage.getItem("allEvaluations") || "[]");
+    // Si estamos online, refrescar del servidor
+    if (navigator.onLine) {
+      const result = await callGAS('getEvaluaciones');
+      if (result.success) {
+        evaluaciones = result.evaluaciones;
+        localStorage.setItem("allEvaluations", JSON.stringify(evaluaciones));
+      }
+    }
     select.innerHTML = '<option value="">-- Selecciona una evaluación --</option>';
     evaluaciones.forEach(e => {
       select.innerHTML += `<option value="${e.id}">${e.empresa} - ${e.fecha_evaluacion} (${e.evaluador})</option>`;
@@ -1099,12 +1156,33 @@
   }
 
   async function cargarDashboardParaEvaluacion(evalId) {
-    const detalle = await callGAS('getEvaluacionDetalle', { id: evalId });
-    if (!detalle.success) return;
-    const respuestas = detalle.respuestas;
-    const respMap = {};
-    respuestas.forEach(r => respMap[r.num] = r.respuesta);
-    const totalSi = respuestas.filter(r => r.respuesta === 'Sí').length;
+    let respMap = {};
+    let evaluacion = null;
+    let totalSi = 0;
+
+    // Primero buscar en cache local
+    const cached = todasEvaluaciones.find(e => e.id === evalId);
+    if (cached && cached.respuestas) {
+      evaluacion = cached;
+      cached.respuestas.forEach(r => respMap[r.num] = r.respuesta);
+      totalSi = cached.total_puntos;
+    } else if (navigator.onLine) {
+      const detalle = await callGAS('getEvaluacionDetalle', { id: evalId });
+      if (!detalle.success) return;
+      evaluacion = detalle.evaluacion;
+      detalle.respuestas.forEach(r => respMap[r.num] = r.respuesta);
+      totalSi = evaluacion.total_puntos;
+      // Guardar en cache local
+      let allEvals = JSON.parse(localStorage.getItem("allEvaluations") || "[]");
+      const idx = allEvals.findIndex(e => e.id === evalId);
+      if (idx !== -1) allEvals[idx].respuestas = detalle.respuestas;
+      else allEvals.push({ ...evaluacion, respuestas: detalle.respuestas });
+      localStorage.setItem("allEvaluations", JSON.stringify(allEvals));
+    } else {
+      mostrarDashboardVacio();
+      return;
+    }
+
     document.getElementById('kpi-general').innerText = `${Math.round((totalSi/preguntas.length)*100)}%`;
     const porPilar = {};
     preguntas.forEach(p => {
@@ -1138,7 +1216,7 @@
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
     });
     generarDetallePreguntas(respMap);
-    window.currentEvalData = { ...detalle.evaluacion, respMap, totalSi, totalPreguntas: preguntas.length, porcGeneral: Math.round((totalSi/preguntas.length)*100), porcEstabilidad: estab, porcMejora: mejora };
+    window.currentEvalData = { ...evaluacion, respMap, totalSi, totalPreguntas: preguntas.length, porcGeneral: Math.round((totalSi/preguntas.length)*100), porcEstabilidad: estab, porcMejora: mejora };
   }
 
   function generarDetallePreguntas(respMap) {
@@ -1220,9 +1298,9 @@
     });
     y = pdf.lastAutoTable.finalY + 8;
 
-    // KPIs más pequeños y centrados (rectángulos redondeados)
+    // KPIs centrados con mismo tamaño de fuente
     const kpiWidth = 45;
-    const kpiHeight = 18;
+    const kpiHeight = 20;
     const kpiSpacing = 8;
     const totalKpiWidth = 3*kpiWidth + 2*kpiSpacing;
     const startX = (pageWidth - totalKpiWidth) / 2;
@@ -1236,15 +1314,15 @@
     pdf.setFontSize(8);
     pdf.text("General", startX + kpiWidth/2, y+5, { align: 'center' });
     pdf.setFontSize(12);
-    pdf.text(`${data.porcGeneral}%`, startX + kpiWidth/2, y+13, { align: 'center' });
+    pdf.text(`${data.porcGeneral}%`, startX + kpiWidth/2, y+14, { align: 'center' });
     
     drawRoundedRect(startX + kpiWidth + kpiSpacing, y, kpiWidth, kpiHeight, 3, [31,58,138]);
     pdf.text("Estabilidad", startX + kpiWidth + kpiSpacing + kpiWidth/2, y+5, { align: 'center' });
-    pdf.text(`${data.porcEstabilidad}%`, startX + kpiWidth + kpiSpacing + kpiWidth/2, y+13, { align: 'center' });
+    pdf.text(`${data.porcEstabilidad}%`, startX + kpiWidth + kpiSpacing + kpiWidth/2, y+14, { align: 'center' });
     
     drawRoundedRect(startX + 2*(kpiWidth+kpiSpacing), y, kpiWidth, kpiHeight, 3, [31,58,138]);
     pdf.text("Mejora", startX + 2*(kpiWidth+kpiSpacing) + kpiWidth/2, y+5, { align: 'center' });
-    pdf.text(`${data.porcMejora}%`, startX + 2*(kpiWidth+kpiSpacing) + kpiWidth/2, y+13, { align: 'center' });
+    pdf.text(`${data.porcMejora}%`, startX + 2*(kpiWidth+kpiSpacing) + kpiWidth/2, y+14, { align: 'center' });
     y += kpiHeight + 12;
 
     // Gráficos más pequeños (70x70)
@@ -1271,7 +1349,7 @@
     pdf.addPage();
     y = margin;
 
-    // Detalle de preguntas (criterios) en página 2
+    // Detalle de preguntas (criterios) en página 2 con color naranja para "No"
     const preguntasPorElemento = {};
     preguntas.forEach(p => { if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = []; preguntasPorElemento[p.elemento].push(p); });
     for (const elemento in preguntasPorElemento) {
@@ -1280,7 +1358,10 @@
       pdf.setFontSize(11);
       pdf.text(elemento, margin, y);
       y += 6;
-      const tableData = preguntasPorElemento[elemento].map(p => [p.num, p.criterio, data.respMap[p.num] === 'Sí' ? 'Sí' : 'No']);
+      const tableData = preguntasPorElemento[elemento].map(p => {
+        const answer = data.respMap[p.num] === 'Sí' ? 'Sí' : 'No';
+        return [p.num, p.criterio, answer];
+      });
       pdf.autoTable({
         startY: y,
         head: [['No.', 'Criterio', 'Respuesta']],
@@ -1289,7 +1370,12 @@
         styles: { fontSize: 8, cellPadding: 2, halign: 'center' },
         headStyles: { fillColor: [31,58,138], textColor: 255 },
         columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 120 }, 2: { cellWidth: 25 } },
-        margin: { left: margin, right: margin }
+        margin: { left: margin, right: margin },
+        didDrawCell: (data) => {
+          if (data.column.index === 2 && data.cell.raw === 'No') {
+            data.cell.styles.textColor = [249, 115, 22]; // color naranja
+          }
+        }
       });
       y = pdf.lastAutoTable.finalY + 3;
     }
@@ -1334,7 +1420,7 @@
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
     if (tabId === 'nueva') { document.getElementById('evaluador').value=currentUser.name; document.getElementById('fecha-evaluacion').valueAsDate=new Date(); }
-    if (tabId === 'evaluaciones') cargarEvaluaciones();
+    if (tabId === 'evaluaciones') cargarEvaluacionesLocales();
     if (tabId === 'dashboard') cargarDashboard();
     if (tabId === 'cuenta') loadProfileForm();
   }
