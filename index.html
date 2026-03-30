@@ -726,12 +726,20 @@
       return;
     }
 
+    const saveBtn = document.getElementById('save-profile-btn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
     // Actualizar localmente primero
+    const oldName = currentUser.name;
+    const oldEmail = currentUser.username;
     currentUser.name = newName;
     currentUser.username = newEmail;
     if (newPassword) currentUser.password = newPassword;
     saveLocalUser();
 
+    // Si estamos online, intentamos sincronizar con el servidor
     if (navigator.onLine) {
       const updates = { name: newName, email: newEmail };
       if (newPassword) updates.password = newPassword;
@@ -749,6 +757,8 @@
     }
     document.getElementById('profile-password').value = "";
     loadProfileForm();
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = originalText;
   }
 
   function loadProfileForm() {
@@ -807,7 +817,7 @@
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                       </tr>`;
+                      </tr>`;
         });
         html += `</tbody></table></div>`;
       }
@@ -1180,10 +1190,12 @@
 
     function addPageIfNeeded(h) { if (y + h > pdf.internal.pageSize.getHeight() - margin) { pdf.addPage(); y = margin; } }
 
+    // Logo
     const logoData = await getLogoDataURL();
     if (logoData) pdf.addImage(logoData, 'PNG', margin, y, 25, 25);
     y += 8;
 
+    // Título
     pdf.setFontSize(18);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Reporte de Evaluación Operativa', pageWidth/2, y, { align: 'center' });
@@ -1206,44 +1218,44 @@
       margin: { left: margin, right: margin },
       columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 100 } }
     });
-    y = pdf.lastAutoTable.finalY + 10;
+    y = pdf.lastAutoTable.finalY + 8;
 
-    // KPIs horizontales centrados (mismo estilo que dashboard)
-    const kpiWidth = 50;
-    const kpiSpacing = 10;
+    // KPIs más pequeños y centrados (rectángulos redondeados)
+    const kpiWidth = 45;
+    const kpiHeight = 18;
+    const kpiSpacing = 8;
     const totalKpiWidth = 3*kpiWidth + 2*kpiSpacing;
     const startX = (pageWidth - totalKpiWidth) / 2;
     
-    // Función para dibujar tarjeta KPI con bordes redondeados
     function drawRoundedRect(x, y, w, h, r, fillColor) {
       pdf.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
       pdf.roundedRect(x, y, w, h, r, r, 'F');
     }
-    drawRoundedRect(startX, y, kpiWidth, 22, 4, [31,58,138]);
+    drawRoundedRect(startX, y, kpiWidth, kpiHeight, 3, [31,58,138]);
     pdf.setTextColor(255);
-    pdf.setFontSize(9);
-    pdf.text("General", startX+2, y+6);
-    pdf.setFontSize(14);
-    pdf.text(`${data.porcGeneral}%`, startX+2, y+16);
+    pdf.setFontSize(8);
+    pdf.text("General", startX + kpiWidth/2, y+5, { align: 'center' });
+    pdf.setFontSize(12);
+    pdf.text(`${data.porcGeneral}%`, startX + kpiWidth/2, y+13, { align: 'center' });
     
-    drawRoundedRect(startX + kpiWidth + kpiSpacing, y, kpiWidth, 22, 4, [31,58,138]);
-    pdf.text("Estabilidad", startX + kpiWidth + kpiSpacing +2, y+6);
-    pdf.text(`${data.porcEstabilidad}%`, startX + kpiWidth + kpiSpacing +2, y+16);
+    drawRoundedRect(startX + kpiWidth + kpiSpacing, y, kpiWidth, kpiHeight, 3, [31,58,138]);
+    pdf.text("Estabilidad", startX + kpiWidth + kpiSpacing + kpiWidth/2, y+5, { align: 'center' });
+    pdf.text(`${data.porcEstabilidad}%`, startX + kpiWidth + kpiSpacing + kpiWidth/2, y+13, { align: 'center' });
     
-    drawRoundedRect(startX + 2*(kpiWidth+kpiSpacing), y, kpiWidth, 22, 4, [31,58,138]);
-    pdf.text("Mejora", startX + 2*(kpiWidth+kpiSpacing)+2, y+6);
-    pdf.text(`${data.porcMejora}%`, startX + 2*(kpiWidth+kpiSpacing)+2, y+16);
-    y += 28;
+    drawRoundedRect(startX + 2*(kpiWidth+kpiSpacing), y, kpiWidth, kpiHeight, 3, [31,58,138]);
+    pdf.text("Mejora", startX + 2*(kpiWidth+kpiSpacing) + kpiWidth/2, y+5, { align: 'center' });
+    pdf.text(`${data.porcMejora}%`, startX + 2*(kpiWidth+kpiSpacing) + kpiWidth/2, y+13, { align: 'center' });
+    y += kpiHeight + 12;
 
-    // Gráficos
+    // Gráficos más pequeños (70x70)
     await new Promise(resolve => setTimeout(resolve, 100));
     const radarCanvas = document.getElementById('radarChart');
     const barCanvas = document.getElementById('horizontalBarChart');
     if (radarCanvas && barCanvas) {
       const radarImg = radarCanvas.toDataURL('image/png');
       const barImg = barCanvas.toDataURL('image/png');
-      const imgWidth = 80;
-      const imgHeight = 80;
+      const imgWidth = 70;
+      const imgHeight = 70;
       const spacing = 10;
       const totalWidth = 2*imgWidth + spacing;
       const startXGraph = (pageWidth - totalWidth) / 2;
@@ -1255,7 +1267,11 @@
       y += imgHeight + 12;
     }
 
-    // Detalle de preguntas
+    // Forzar salto de página para que la tabla de criterios comience en página 2
+    pdf.addPage();
+    y = margin;
+
+    // Detalle de preguntas (criterios) en página 2
     const preguntasPorElemento = {};
     preguntas.forEach(p => { if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = []; preguntasPorElemento[p.elemento].push(p); });
     for (const elemento in preguntasPorElemento) {
@@ -1278,7 +1294,7 @@
       y = pdf.lastAutoTable.finalY + 3;
     }
 
-    // Firmas
+    // Firmas al final de la última página
     addPageIfNeeded(40);
     const signWidth = 80;
     const startSignX = (pageWidth - 2*signWidth - 20) / 2;
