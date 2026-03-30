@@ -21,7 +21,11 @@
       --text-light: #4b5563;
       --shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--light-bg);
@@ -161,6 +165,11 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
     }
     .btn-secondary {
       background: #64748b;
@@ -169,6 +178,10 @@
       background: white;
       border: 1px solid var(--primary);
       color: var(--primary);
+    }
+    .btn-outline:hover {
+      background: var(--primary);
+      color: white;
     }
     .hidden {
       display: none;
@@ -179,8 +192,16 @@
       margin-bottom: 1rem;
       font-size: 0.85rem;
     }
-    .alert-error { background: #fee2e2; color: #b91c1c; border-left: 4px solid #b91c1c; }
-    .alert-success { background: #e0f2e9; color: var(--primary); border-left: 4px solid var(--primary); }
+    .alert-error {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-left: 4px solid #b91c1c;
+    }
+    .alert-success {
+      background: #e0f2e9;
+      color: var(--primary);
+      border-left: 4px solid var(--primary);
+    }
     .flex-between {
       display: flex;
       justify-content: space-between;
@@ -188,6 +209,88 @@
       flex-wrap: wrap;
       gap: 0.8rem;
     }
+    /* Tablas y formularios de preguntas */
+    .evaluation-table-wrapper {
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    .evaluation-table {
+      width: 100%;
+      min-width: 500px;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .evaluation-table th {
+      background: var(--primary);
+      color: white;
+      padding: 10px;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid var(--primary-dark);
+    }
+    .evaluation-table td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      vertical-align: top;
+    }
+    .section-title {
+      background: #f1f5f9;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-top: 1rem;
+      border-radius: 8px;
+      color: var(--primary);
+      border-left: 4px solid var(--secondary);
+    }
+    .sub-section {
+      background: #f8fafc;
+      padding: 6px 12px;
+      font-weight: 600;
+      margin-top: 0.4rem;
+      border-left: 4px solid var(--secondary);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .sub-section:hover {
+      background: #e2e8f0;
+    }
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+    }
+    table.data-table th,
+    table.data-table td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+    }
+    table.data-table th {
+      background: #f1f5f9;
+      font-weight: 600;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 1.2rem;
+    }
+    .filter-bar .form-group {
+      flex: 1;
+      min-width: 130px;
+    }
+    /* Dashboard layout */
     .dashboard-row {
       display: flex;
       flex-wrap: wrap;
@@ -246,6 +349,7 @@
       display: flex;
       align-items: center;
       gap: 1rem;
+      margin-bottom: 1rem;
     }
     .profile-photo img {
       width: 80px;
@@ -254,10 +358,103 @@
       object-fit: cover;
       border: 2px solid var(--secondary);
     }
+    /* Detalle de preguntas colapsable */
+    .element-group {
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+    .element-header {
+      background: var(--primary);
+      color: white;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+      font-size: 0.9rem;
+    }
+    .element-header:hover {
+      background: var(--primary-dark);
+    }
+    .element-header i {
+      transition: transform 0.2s;
+      color: var(--secondary);
+    }
+    .element-header.collapsed i {
+      transform: rotate(-90deg);
+    }
+    .element-questions {
+      display: block;
+      overflow-x: auto;
+    }
+    .element-questions.collapsed {
+      display: none;
+    }
+    .element-questions table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .element-questions th {
+      background: #f1f5f9;
+      font-weight: 600;
+      padding: 8px;
+      border: 1px solid var(--border);
+    }
+    .element-questions td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+    }
+    .answer-yes {
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+    .answer-no {
+      color: #f97316;
+      font-weight: 600;
+    }
+    .detail-row {
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      margin-top: 0.8rem;
+      padding: 0.8rem;
+      display: none;
+    }
+    .detail-row.show {
+      display: table-row;
+    }
+    .detail-row td {
+      padding: 0.8rem;
+      background: #f8fafc;
+    }
+    .loader {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid var(--secondary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 6px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
     @media (max-width: 768px) {
+      .app-container { padding: 0.8rem; }
+      .header { padding: 0.8rem 1rem; }
+      .logo-text { font-size: 1rem; }
       .dashboard-row { flex-direction: column; }
       .kpi-block { flex-direction: row; flex-wrap: wrap; }
-      .kpi-card { flex: 1; }
+      .kpi-card { flex: 1; min-width: 120px; }
+      .chart-container { min-width: auto; }
+      .chart-wrapper { height: 220px; }
+      .tab-btn { padding: 0.5rem 1rem; font-size: 0.85rem; }
     }
   </style>
 </head>
@@ -333,7 +530,7 @@
     <div id="tab-evaluaciones" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Evaluaciones realizadas</div>
-        <div class="filter-bar" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div class="filter-bar">
           <div class="form-group">
             <label>Filtrar por empresa</label>
             <select id="filter-empresa-evaluaciones"><option value="">Todas</option></select>
@@ -408,15 +605,13 @@
 
 <script>
   // ==================== CONFIGURACIÓN ====================
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxICilStWld6uZjecBT3cLmM176XEdVyz5QJQs52h0PYN6Ar_V89Gtla78dsQDuvu1bg/exec"; // REEMPLAZAR
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxICilStWld6uZjecBT3cLmM176XEdVyz5QJQs52h0PYN6Ar_V89Gtla78dsQDuvu1bg/exec"; // ← REEMPLAZAR
 
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
   let todasEvaluaciones = [];
   let radarChart = null, horizontalBarChart = null;
-
-  // OFFLINE QUEUE
   let pendingEvaluations = [];
 
   // Cargar datos locales
@@ -474,7 +669,7 @@
         console.warn("Error al sincronizar evaluación", result.message);
       }
     }
-    cargarEvaluaciones(); // refrescar lista
+    cargarEvaluaciones();
   }
 
   window.addEventListener('online', () => { syncPending(); updateSyncStatus(); });
@@ -594,18 +789,27 @@
     for (const pilar in grouped) {
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
-        html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+        html += `<div class="sub-section">${elemento}</div>`;
+        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
-          html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td><div class="radio-group"><label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label><label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label></div></td></tr>`;
+          html += `<tr>
+                      <td>${p.num}</td>
+                      <td>${p.criterio}</td>
+                      <td><div class="radio-group">
+                          <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
+                          <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
+                        </div></td>
+                    </tr>`;
         });
         html += `</tbody></table></div>`;
       }
     }
     container.innerHTML = html;
     preguntas.forEach(p => {
-      document.querySelectorAll(`input[name="q_${p.num}"]`).forEach(radio => {
+      const radios = document.querySelectorAll(`input[name="q_${p.num}"]`);
+      radios.forEach(radio => {
         radio.addEventListener('change', (e) => {
           if (e.target.checked) respuestasSeleccionadas[p.num] = e.target.value;
         });
@@ -647,7 +851,7 @@
   // === EVALUACIONES ===
   async function cargarEvaluaciones() {
     const container = document.getElementById('evaluaciones-list-container');
-    container.innerHTML = '<div class="loader"></div> Cargando...';
+    container.innerHTML = '<div class="loader"></div> Cargando evaluaciones...';
     if (preguntas.length === 0) setTimeout(() => cargarEvaluaciones(), 500);
     const result = await callGAS('getEvaluaciones');
     if (result.success) {
@@ -657,6 +861,17 @@
     } else {
       container.innerHTML = `<div class="alert alert-error">Error: ${result.message}</div>`;
     }
+  }
+
+  function poblarFiltrosEvaluaciones(evaluaciones) {
+    const empresas = [...new Set(evaluaciones.map(e => e.empresa).filter(e => e))];
+    const evaluadores = [...new Set(evaluaciones.map(e => e.evaluador).filter(e => e))];
+    const empresaSelect = document.getElementById('filter-empresa-evaluaciones');
+    const evaluadorSelect = document.getElementById('filter-evaluador-evaluaciones');
+    empresaSelect.innerHTML = '<option value="">Todas las empresas</option>';
+    empresas.forEach(emp => empresaSelect.innerHTML += `<option value="${escapeHtml(emp)}">${escapeHtml(emp)}</option>`);
+    evaluadorSelect.innerHTML = '<option value="">Todos los evaluadores</option>';
+    evaluadores.forEach(evalName => evaluadorSelect.innerHTML += `<option value="${escapeHtml(evalName)}">${escapeHtml(evalName)}</option>`);
   }
 
   function aplicarFiltrosEvaluaciones() {
@@ -671,7 +886,10 @@
 
   function renderEvaluacionesList(evaluaciones) {
     const container = document.getElementById('evaluaciones-list-container');
-    if (!evaluaciones.length) { container.innerHTML = '<div class="alert">No hay evaluaciones</div>'; return; }
+    if (!evaluaciones.length) {
+      container.innerHTML = '<div class="alert">No hay evaluaciones con los filtros seleccionados.</div>';
+      return;
+    }
     let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th></tr></thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
@@ -683,7 +901,7 @@
                   <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
                   <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
                 </tr>
-                <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando...</div></td></tr>`;
+                <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando detalle...</div></td></tr>`;
     });
     html += `</tbody></table>`;
     container.innerHTML = html;
@@ -691,7 +909,10 @@
 
   window.toggleDetalle = async function(id) {
     const detailRow = document.getElementById(`detail-${id}`);
-    if (detailRow.classList.contains('show')) { detailRow.classList.remove('show'); return; }
+    if (detailRow.classList.contains('show')) {
+      detailRow.classList.remove('show');
+      return;
+    }
     detailRow.classList.add('show');
     const contentDiv = document.getElementById(`detail-content-${id}`);
     if (!contentDiv.innerHTML.includes('Cargando')) return;
@@ -848,7 +1069,7 @@
     pdf.text('Reporte de Evaluación Operativa', pageWidth/2, y, { align: 'center' });
     y += 12;
 
-    // Tabla resumen centrada (autoTable con margen automático)
+    // Tabla resumen centrada
     const summaryData = [
       ['Empresa', data.empresa],
       ['Fecha evaluación', data.fecha],
@@ -870,7 +1091,7 @@
     });
     y = pdf.lastAutoTable.finalY + 10;
 
-    // KPIs horizontales más pequeños
+    // KPIs horizontales más pequeños y centrados
     const kpiWidth = 50;
     const kpiSpacing = 10;
     const totalKpiWidth = 3*kpiWidth + 2*kpiSpacing;
@@ -934,7 +1155,7 @@
       y = pdf.lastAutoTable.finalY + 3;
     }
 
-    // Firmas al final centradas
+    // Firmas centradas
     addPageIfNeeded(40);
     const signWidth = 80;
     const startSignX = (pageWidth - 2*signWidth - 20) / 2;
@@ -1000,6 +1221,16 @@
     }
   };
   document.getElementById('clear-photo-btn').onclick = () => { delete currentUser.photo; saveLocalUser(); document.getElementById('profile-photo-img').src = "logo_c4.png"; document.getElementById('user-avatar').src = "logo_c4.png"; };
+  document.getElementById('delete-account-btn').onclick = async () => {
+    if (confirm("¿Estás seguro de eliminar tu cuenta? Esta acción es irreversible.")) {
+      const result = await callGAS('deleteUser', { userId: currentUser.id });
+      if (result.success) {
+        localStorage.removeItem("currentUser");
+        alert("Cuenta eliminada.");
+        location.reload();
+      } else alert("Error al eliminar cuenta: " + result.message);
+    }
+  };
   document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => activarPestana(btn.getAttribute('data-tab'))));
 
   loadLocalData();
