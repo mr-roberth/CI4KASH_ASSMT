@@ -21,11 +21,7 @@
       --text-light: #4b5563;
       --shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
     }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--light-bg);
@@ -619,6 +615,7 @@
   let todasEvaluaciones = [];      // Evaluaciones sincronizadas desde el servidor
   let pendingEvaluations = [];      // Evaluaciones locales pendientes
   let radarChart = null, horizontalBarChart = null;
+  let syncing = false;             // Bandera para evitar sincronizaciones simultáneas
 
   // Cargar datos locales
   function loadLocalData() {
@@ -730,7 +727,7 @@
       showProfileMsg("Perfil actualizado correctamente", "success");
       document.getElementById('profile-password').value = "";
     } else {
-      showProfileMsg(result.message, "error");
+      showProfileMsg(result.message || "Error al actualizar perfil", "error");
     }
   }
 
@@ -784,13 +781,13 @@
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
           html += `<tr>
-                       <td>${p.num}</td>
-                       <td>${p.criterio}</td>
-                       <td><div class="radio-group">
+                        <td>${p.num}</td>
+                        <td>${p.criterio}</td>
+                        <td><div class="radio-group">
                           <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
                           <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
                         </div></td>
-                     </tr>`;
+                      </tr>`;
         });
         html += `</tbody></table></div>`;
       }
@@ -824,7 +821,7 @@
 
     if (!navigator.onLine) {
       // Guardar localmente con ID temporal
-      const localId = "local_" + Date.now();
+      const localId = "local_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
       const newEval = {
         id: localId,
         empresa,
@@ -869,7 +866,13 @@
       alert("No hay evaluaciones pendientes de sincronizar.");
       return;
     }
+    if (syncing) {
+      alert("Ya hay una sincronización en curso. Espera a que termine.");
+      return;
+    }
+    syncing = true;
     const syncBtn = document.getElementById('sync-now-btn');
+    const originalText = syncBtn.innerHTML;
     syncBtn.disabled = true;
     syncBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
     let successCount = 0;
@@ -888,32 +891,45 @@
       }
     }
     updateSyncStatus();
-    await cargarEvaluaciones(); // refrescar lista con datos del servidor
+    // Recargar evaluaciones desde el servidor (ya no hay pendientes)
+    await cargarEvaluaciones();
     alert(`Sincronización completada. ${successCount} evaluaciones enviadas.`);
     syncBtn.disabled = false;
-    syncBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Sincronizar ahora';
+    syncBtn.innerHTML = originalText;
+    syncing = false;
   }
 
   // === EVALUACIONES ===
   async function cargarEvaluaciones() {
     const container = document.getElementById('evaluaciones-list-container');
     container.innerHTML = '<div class="loader"></div> Cargando evaluaciones...';
-    if (preguntas.length === 0) setTimeout(() => cargarEvaluaciones(), 500);
+    if (preguntas.length === 0) {
+      const wait = setInterval(() => {
+        if (preguntas.length > 0) {
+          clearInterval(wait);
+          cargarEvaluaciones();
+        }
+      }, 500);
+      return;
+    }
     const result = await callGAS('getEvaluaciones');
     if (result.success) {
       todasEvaluaciones = result.evaluaciones || [];
-      // Combinar evaluaciones pendientes locales (para mostrar en lista)
-      const pendingLocal = pendingEvaluations.map((p, idx) => ({
-        id: p.localId,
-        empresa: p.empresa,
-        fecha_evaluacion: p.fecha,
-        evaluador: p.evaluador,
-        representante: p.representante,
-        asistentes: p.asistentes,
-        total_puntos: p.total_puntos,
-        created_at: new Date().toISOString(),
-        pending: true
-      }));
+      // Combinar evaluaciones pendientes locales, evitando duplicados con las del servidor
+      const serverKeys = new Set(todasEvaluaciones.map(e => `${e.empresa}|${e.fecha_evaluacion}|${e.evaluador}`));
+      const pendingLocal = pendingEvaluations
+        .filter(p => !serverKeys.has(`${p.empresa}|${p.fecha}|${p.evaluador}`))
+        .map((p, idx) => ({
+          id: p.localId,
+          empresa: p.empresa,
+          fecha_evaluacion: p.fecha,
+          evaluador: p.evaluador,
+          representante: p.representante,
+          asistentes: p.asistentes,
+          total_puntos: p.total_puntos,
+          created_at: new Date().toISOString(),
+          pending: true
+        }));
       todasEvaluaciones = [...pendingLocal, ...todasEvaluaciones];
       poblarFiltrosEvaluaciones(todasEvaluaciones);
       aplicarFiltrosEvaluaciones();
@@ -955,12 +971,12 @@
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
       const pendingBadge = e.pending ? '<span class="pending-badge">Pendiente</span>' : '';
       html += `<tr id="eval-row-${e.id}">
-                   <td>${escapeHtml(e.empresa || '')} ${pendingBadge}</td>
-                   <td>${e.fecha_evaluacion || ''}</td>
-                   <td>${escapeHtml(e.evaluador || '')}</td>
-                   <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
-                   <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
-                 </tr>
+                    <td>${escapeHtml(e.empresa || '')} ${pendingBadge}</td>
+                    <td>${e.fecha_evaluacion || ''}</td>
+                    <td>${escapeHtml(e.evaluador || '')}</td>
+                    <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                    <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
+                  </tr>
                 <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando detalle...</div></td></tr>`;
     });
     html += `</tbody></table>`;
@@ -1037,13 +1053,13 @@
     select.innerHTML = '<option>Cargando...</option>';
     const result = await callGAS('getEvaluaciones');
     if (!result.success) { select.innerHTML = '<option>Error</option>'; return; }
-    todasEvaluaciones = result.evaluaciones || [];
+    const evaluaciones = result.evaluaciones || [];
     select.innerHTML = '<option value="">-- Selecciona una evaluación --</option>';
-    todasEvaluaciones.forEach(e => {
+    evaluaciones.forEach(e => {
       select.innerHTML += `<option value="${e.id}">${e.empresa} - ${e.fecha_evaluacion} (${e.evaluador})</option>`;
     });
-    if (todasEvaluaciones.length) {
-      const masReciente = todasEvaluaciones.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+    if (evaluaciones.length) {
+      const masReciente = evaluaciones.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
       select.value = masReciente.id;
       cargarDashboardParaEvaluacion(masReciente.id);
     } else mostrarDashboardVacio();
@@ -1197,6 +1213,8 @@
     pdf.text(`${data.porcMejora}%`, startX + 2*(kpiWidth+kpiSpacing)+2, y+13);
     y += 24;
 
+    // Esperar un momento para que los gráficos se rendericen
+    await new Promise(resolve => setTimeout(resolve, 100));
     // Gráficos lado a lado centrados
     const radarCanvas = document.getElementById('radarChart');
     const barCanvas = document.getElementById('horizontalBarChart');
