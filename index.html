@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <meta name="referrer" content="no-referrer">
   <title>Assessment | Gestión Operativa</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -12,7 +11,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <style>
-    /* ========== PALETA DE COLORES ========== */
     :root {
       --primary-dark: #0f2b5e;
       --primary: #1e3a8a;
@@ -21,26 +19,20 @@
       --border: #e2e8f0;
       --text: #1f2937;
       --text-light: #4b5563;
-      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
     }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--light-bg);
       color: var(--text);
       line-height: 1.5;
-      overflow-x: hidden;
     }
     .app-container {
       max-width: 1400px;
       margin: 0 auto;
       padding: 1rem;
     }
-    /* Header con degradado */
     .header {
       background: linear-gradient(135deg, #0f2b5e 0%, #3b4d7a 100%);
       border-radius: 1rem 1rem 0 0;
@@ -61,6 +53,8 @@
     .logo-area img {
       height: 40px;
       width: auto;
+      border-radius: 50%;
+      object-fit: cover;
     }
     .logo-text {
       font-size: 1.25rem;
@@ -74,7 +68,13 @@
       background: rgba(255,255,255,0.15);
       padding: 0.4rem 0.8rem;
       border-radius: 40px;
-      backdrop-filter: blur(4px);
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: white;
     }
     .user-name {
       font-weight: 600;
@@ -87,11 +87,7 @@
       color: white;
       cursor: pointer;
       font-size: 0.9rem;
-      opacity: 0.8;
-      transition: opacity 0.2s;
     }
-    .btn-logout:hover { opacity: 1; }
-    /* Pestañas */
     .tabs {
       display: flex;
       gap: 0.5rem;
@@ -107,7 +103,6 @@
       font-weight: 600;
       color: var(--text-light);
       cursor: pointer;
-      transition: all 0.2s;
       border-radius: 30px 30px 0 0;
     }
     .tab-btn.active {
@@ -115,11 +110,6 @@
       border-bottom: 3px solid var(--secondary);
       background: white;
     }
-    .tab-btn:hover:not(.active) {
-      background: #f1f5f9;
-      color: var(--primary);
-    }
-    /* Tarjetas */
     .card {
       background: white;
       border-radius: 1rem;
@@ -141,6 +131,9 @@
       gap: 1rem;
       margin-bottom: 1.2rem;
     }
+    .form-group {
+      margin-bottom: 0.8rem;
+    }
     .form-group label {
       font-weight: 600;
       display: block;
@@ -148,69 +141,13 @@
       font-size: 0.8rem;
       color: var(--text-light);
     }
-    .form-group input,
-    .form-group select {
+    .form-group input, .form-group select {
       width: 100%;
       padding: 0.6rem 0.8rem;
       border: 1px solid var(--border);
       border-radius: 0.75rem;
       font-family: inherit;
-      background: white;
       font-size: 0.9rem;
-    }
-    /* Tabla de preguntas con scroll horizontal */
-    .evaluation-table-wrapper {
-      overflow-x: auto;
-      margin: 1rem 0;
-    }
-    .evaluation-table {
-      width: 100%;
-      min-width: 500px;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
-    .evaluation-table th {
-      background: var(--primary);
-      color: white;
-      padding: 10px;
-      font-weight: 600;
-      text-align: center;
-      border: 1px solid var(--primary-dark);
-    }
-    .evaluation-table td {
-      border: 1px solid var(--border);
-      padding: 10px;
-      vertical-align: top;
-    }
-    .section-title {
-      background: #f1f5f9;
-      padding: 8px 12px;
-      font-weight: 700;
-      font-size: 1rem;
-      margin-top: 1rem;
-      border-radius: 8px;
-      color: var(--primary);
-      border-left: 4px solid var(--secondary);
-    }
-    .sub-section {
-      background: #f8fafc;
-      padding: 6px 12px;
-      font-weight: 600;
-      margin-top: 0.4rem;
-      border-left: 4px solid var(--secondary);
-      color: var(--text);
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .sub-section:hover {
-      background: #e2e8f0;
-    }
-    .radio-group {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
     }
     .btn {
       background: var(--primary);
@@ -224,29 +161,17 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      transition: all 0.2s;
-    }
-    .btn:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
     }
     .btn-secondary {
       background: #64748b;
-    }
-    .btn-secondary:hover {
-      background: #475569;
     }
     .btn-outline {
       background: white;
       border: 1px solid var(--primary);
       color: var(--primary);
     }
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.8rem;
+    .hidden {
+      display: none;
     }
     .alert {
       padding: 0.7rem 1rem;
@@ -254,83 +179,47 @@
       margin-bottom: 1rem;
       font-size: 0.85rem;
     }
-    .alert-error {
-      background: #fee2e2;
-      color: #b91c1c;
-      border-left: 4px solid #b91c1c;
-    }
-    .alert-success {
-      background: #e0f2e9;
-      color: var(--primary);
-      border-left: 4px solid var(--primary);
-    }
-    .hidden {
-      display: none;
-    }
-    table.data-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      font-size: 0.8rem;
-    }
-    table.data-table th,
-    table.data-table td {
-      border: 1px solid var(--border);
-      padding: 8px;
-      text-align: left;
-    }
-    table.data-table th {
-      background: #f1f5f9;
-      font-weight: 600;
-    }
-    .filter-bar {
+    .alert-error { background: #fee2e2; color: #b91c1c; border-left: 4px solid #b91c1c; }
+    .alert-success { background: #e0f2e9; color: var(--primary); border-left: 4px solid var(--primary); }
+    .flex-between {
       display: flex;
-      gap: 0.8rem;
+      justify-content: space-between;
+      align-items: center;
       flex-wrap: wrap;
-      align-items: flex-end;
-      margin-bottom: 1.2rem;
+      gap: 0.8rem;
     }
-    .filter-bar .form-group {
-      flex: 1;
-      min-width: 130px;
-    }
-    /* Dashboard layout responsive */
     .dashboard-row {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
-      margin-top: 1rem;
+      align-items: stretch;
+      margin-bottom: 1.5rem;
     }
     .kpi-block {
       flex: 1;
-      min-width: 160px;
+      min-width: 180px;
       display: flex;
       flex-direction: column;
       gap: 0.8rem;
     }
-  .kpi-card {
-  background: #1e3a8a; /* azul */
-  border-radius: 1rem;
-  padding: 1rem;
-  box-shadow: var(--shadow);
-  text-align: center;
-  border-top: 4px solid #FA740F;
-  color: white;
-}
-
-.kpi-value {
-  font-size: 2rem;
-  font-weight: 800;
-  color: white;
-  margin: 0.3rem 0;
-}
-
-.kpi-label {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.8);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+    .kpi-card {
+      background: #1e3a8a;
+      border-radius: 1rem;
+      padding: 1rem;
+      text-align: center;
+      border-top: 4px solid #FA740F;
+      color: white;
+    }
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0.3rem 0;
+    }
+    .kpi-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
     .chart-container {
       background: white;
       border-radius: 1rem;
@@ -344,164 +233,31 @@
       height: 250px;
       margin-top: 0.8rem;
     }
-    .dashboard-selector {
-      margin-bottom: 1rem;
-      display: flex;
-      justify-content: space-between;
+    .sync-status {
+      display: inline-flex;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-    }
-    .loader {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      border: 2px solid #f3f3f3;
-      border-top: 2px solid var(--secondary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-right: 6px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    /* Detalle expandible en evaluaciones */
-    .detail-row {
-      background: #f8fafc;
-      border-radius: 0.75rem;
-      margin-top: 0.8rem;
-      padding: 0.8rem;
-      display: none;
-    }
-    .detail-row.show {
-      display: table-row;
-    }
-    .detail-row td {
-      padding: 0.8rem;
-      background: #f8fafc;
-    }
-    /* Detalle de preguntas en dashboard (tabla colapsable) */
-    .question-detail {
-      margin-top: 1.5rem;
-      border-top: 2px solid var(--border);
-      padding-top: 1rem;
-    }
-    .element-group {
-      margin-bottom: 1rem;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      overflow: hidden;
-    }
-    .element-header {
-      background: var(--primary);
-      color: white;
-      padding: 10px 12px;
-      cursor: pointer;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s;
-      font-size: 0.9rem;
-    }
-    .element-header:hover {
-      background: var(--primary-dark);
-    }
-    .element-header i {
-      transition: transform 0.2s;
-      color: var(--secondary);
-    }
-    .element-header.collapsed i {
-      transform: rotate(-90deg);
-    }
-    .element-questions {
-      display: block;
-      overflow-x: auto;
-    }
-    .element-questions.collapsed {
-      display: none;
-    }
-    .element-questions table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
-    .element-questions th {
+      gap: 0.5rem;
       background: #f1f5f9;
-      font-weight: 600;
-      padding: 8px;
-      border: 1px solid var(--border);
+      padding: 0.3rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.75rem;
     }
-    .element-questions td {
-      border: 1px solid var(--border);
-      padding: 6px 8px;
+    .profile-photo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-    .answer-yes {
-      color: #1e3a8a;
-      font-weight: 600;
+    .profile-photo img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--secondary);
     }
-    .answer-no {
-      color: #f97316;
-      font-weight: 600;
-    }
-    /* Estilos responsivos adicionales */
     @media (max-width: 768px) {
-      .app-container {
-        padding: 0.8rem;
-      }
-      .header {
-        padding: 0.8rem 1rem;
-      }
-      .logo-text {
-        font-size: 1rem;
-      }
-      .card {
-        padding: 1rem;
-      }
-      .card-title {
-        font-size: 1.2rem;
-      }
-      .form-grid {
-        grid-template-columns: 1fr;
-        gap: 0.8rem;
-      }
-      .evaluation-table {
-        min-width: 450px;
-      }
-      .filter-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .dashboard-row {
-        flex-direction: column;
-      }
-      .kpi-block {
-        flex-direction: row;
-        flex-wrap: wrap;
-      }
-      .kpi-card {
-        flex: 1;
-        min-width: 120px;
-      }
-      .chart-container {
-        min-width: auto;
-      }
-      .chart-wrapper {
-        height: 220px;
-      }
-      .tab-btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-      }
-      .btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.8rem;
-      }
-      .element-header {
-        padding: 8px 10px;
-        font-size: 0.85rem;
-      }
+      .dashboard-row { flex-direction: column; }
+      .kpi-block { flex-direction: row; flex-wrap: wrap; }
+      .kpi-card { flex: 1; }
     }
   </style>
 </head>
@@ -509,11 +265,13 @@
 <div class="app-container">
   <div class="header">
     <div class="logo-area">
-      <img src="logo_c4.png" alt="Logo" id="logo-img" onerror="this.style.display='none'; this.nextSibling.style.display='inline'">
+      <img src="logo_c4.png" alt="Logo" id="logo-img" onerror="this.style.display='none'">
       <span class="logo-text">Assessment - Modelo de Gestión Operativa</span>
     </div>
     <div id="user-info" class="user-info hidden">
+      <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
       <span class="user-name" id="user-name-display"></span>
+      <span id="sync-status" class="sync-status"><i class="fas fa-sync-alt"></i> Sincronizado</span>
       <button id="logout-btn" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </div>
@@ -522,7 +280,7 @@
   <div id="login-view">
     <div class="card" style="max-width: 480px; margin: 2rem auto;">
       <div style="text-align: center; margin-bottom: 1rem;">
-        <img src="logo_c4.png" alt="Logo" style="height: 50px;" onerror="this.style.display='none'">
+        <img src="logo_c4.png" alt="Logo" style="height: 50px;">
       </div>
       <div class="card-title">Acceso al sistema</div>
       <div id="login-error" class="alert alert-error hidden"></div>
@@ -548,9 +306,10 @@
       <button class="tab-btn" data-tab="nueva">Nueva evaluación</button>
       <button class="tab-btn" data-tab="evaluaciones">Evaluaciones</button>
       <button class="tab-btn" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="cuenta">Mi Cuenta</button>
     </div>
 
-    <!-- Pestaña Nueva evaluación -->
+    <!-- Nueva evaluación -->
     <div id="tab-nueva" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Registro de evaluación</div>
@@ -562,9 +321,7 @@
           <div class="form-group"><label>Representante organización *</label><input type="text" id="representante"></div>
           <div class="form-group"><label>Asistentes</label><input type="text" id="asistentes"></div>
         </div>
-        <div class="evaluation-table-wrapper">
-          <div id="preguntas-container"></div>
-        </div>
+        <div id="preguntas-container"></div>
         <div class="flex-between" style="margin-top: 1rem;">
           <button id="cancel-new" class="btn btn-secondary">Cancelar</button>
           <button id="submit-evaluation" class="btn">Guardar evaluación</button>
@@ -572,31 +329,32 @@
       </div>
     </div>
 
-    <!-- Pestaña Evaluaciones -->
+    <!-- Evaluaciones -->
     <div id="tab-evaluaciones" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Evaluaciones realizadas</div>
-        <div class="filter-bar">
+        <div class="filter-bar" style="display: flex; gap: 1rem; flex-wrap: wrap;">
           <div class="form-group">
             <label>Filtrar por empresa</label>
-            <select id="filter-empresa-evaluaciones"><option value="">Todas las empresas</option></select>
+            <select id="filter-empresa-evaluaciones"><option value="">Todas</option></select>
           </div>
           <div class="form-group">
             <label>Filtrar por evaluador</label>
-            <select id="filter-evaluador-evaluaciones"><option value="">Todos los evaluadores</option></select>
+            <select id="filter-evaluador-evaluaciones"><option value="">Todos</option></select>
           </div>
-          <button id="apply-filters-evaluaciones" class="btn">Aplicar filtros</button>
+          <button id="apply-filters-evaluaciones" class="btn">Aplicar</button>
           <button id="reset-filters-evaluaciones" class="btn btn-secondary">Mostrar todas</button>
+          <button id="sync-now-btn" class="btn btn-outline"><i class="fas fa-cloud-upload-alt"></i> Sincronizar ahora</button>
         </div>
         <div id="evaluaciones-list-container"></div>
       </div>
     </div>
 
-    <!-- Pestaña Dashboard -->
+    <!-- Dashboard -->
     <div id="tab-dashboard" class="tab-content hidden">
       <div class="card">
         <div class="card-title">Dashboard de resultados</div>
-        <div class="dashboard-selector">
+        <div class="dashboard-selector" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
           <div class="form-group" style="width: 260px;">
             <label>Seleccionar evaluación</label>
             <select id="dashboard-eval-select"></select>
@@ -607,16 +365,41 @@
           <div class="dashboard-row">
             <div class="kpi-block">
               <div class="kpi-card"><div class="kpi-label">Resultado General</div><div class="kpi-value" id="kpi-general">--</div></div>
-              <div class="kpi-card"><div class="kpi-label">Resultado Estabilidad</div><div class="kpi-value" id="kpi-estabilidad">--</div></div>
-              <div class="kpi-card"><div class="kpi-label">Resultado Mejora de Procesos</div><div class="kpi-value" id="kpi-mejora">--</div></div>
+              <div class="kpi-card"><div class="kpi-label">Estabilidad</div><div class="kpi-value" id="kpi-estabilidad">--</div></div>
+              <div class="kpi-card"><div class="kpi-label">Mejora de Procesos</div><div class="kpi-value" id="kpi-mejora">--</div></div>
             </div>
             <div class="chart-container"><h3>Cumplimiento de elementos</h3><div class="chart-wrapper"><canvas id="radarChart"></canvas></div></div>
             <div class="chart-container"><h3>Cumplimiento de criterios</h3><div class="chart-wrapper"><canvas id="horizontalBarChart"></canvas></div></div>
           </div>
-          <div class="question-detail" id="question-detail">
-            <h3 style="margin-bottom: 0.8rem; color: var(--primary);">Detalle de preguntas</h3>
-            <div id="question-detail-content">Seleccione una evaluación para ver el detalle.</div>
+          <div id="question-detail">
+            <h3 style="margin: 1rem 0 0.5rem;">Detalle de preguntas</h3>
+            <div id="question-detail-content"></div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mi Cuenta -->
+    <div id="tab-cuenta" class="tab-content hidden">
+      <div class="card">
+        <div class="card-title">Administración de cuenta</div>
+        <div id="profile-msg" class="alert hidden"></div>
+        <div class="profile-photo">
+          <img id="profile-photo-img" src="" alt="Foto de perfil">
+          <div>
+            <label for="profile-photo-input" class="btn btn-outline">Seleccionar foto</label>
+            <input type="file" id="profile-photo-input" accept="image/*" style="display: none;">
+            <button id="clear-photo-btn" class="btn btn-outline">Quitar foto</button>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Nombre completo</label><input type="text" id="profile-name"></div>
+          <div class="form-group"><label>Correo electrónico</label><input type="email" id="profile-email"></div>
+          <div class="form-group"><label>Nueva contraseña (dejar en blanco para no cambiar)</label><input type="password" id="profile-password"></div>
+        </div>
+        <div class="flex-between">
+          <button id="save-profile-btn" class="btn">Guardar cambios</button>
+          <button id="delete-account-btn" class="btn btn-secondary">Eliminar cuenta</button>
         </div>
       </div>
     </div>
@@ -625,17 +408,77 @@
 
 <script>
   // ==================== CONFIGURACIÓN ====================
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxICilStWld6uZjecBT3cLmM176XEdVyz5QJQs52h0PYN6Ar_V89Gtla78dsQDuvu1bg/exec"; // ← REEMPLAZAR
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxICilStWld6uZjecBT3cLmM176XEdVyz5QJQs52h0PYN6Ar_V89Gtla78dsQDuvu1bg/exec"; // REEMPLAZAR
 
   let currentUser = null;
   let preguntas = [];
   let respuestasSeleccionadas = {};
   let todasEvaluaciones = [];
-  let radarChart = null;
-  let horizontalBarChart = null;
+  let radarChart = null, horizontalBarChart = null;
 
-  const PREGUNTAS_CACHE_KEY = "gestion_operativa_preguntas";
-  const PREGUNTAS_CACHE_TIME = 24 * 60 * 60 * 1000;
+  // OFFLINE QUEUE
+  let pendingEvaluations = [];
+
+  // Cargar datos locales
+  function loadLocalData() {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      try {
+        currentUser = JSON.parse(storedUser);
+        document.getElementById('user-name-display').textContent = currentUser.name;
+        if (currentUser.photo) document.getElementById('user-avatar').src = currentUser.photo;
+        document.getElementById('user-info').classList.remove('hidden');
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('main-view').classList.remove('hidden');
+        loadPreguntas();
+        cargarEvaluaciones();
+      } catch(e) {}
+    }
+    const storedPending = localStorage.getItem("pendingEvaluations");
+    if (storedPending) pendingEvaluations = JSON.parse(storedPending);
+    updateSyncStatus();
+  }
+
+  function saveLocalUser() {
+    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    document.getElementById('user-name-display').textContent = currentUser.name;
+    if (currentUser.photo) document.getElementById('user-avatar').src = currentUser.photo;
+  }
+
+  function updateSyncStatus() {
+    const statusEl = document.getElementById('sync-status');
+    if (!navigator.onLine) {
+      statusEl.innerHTML = '<i class="fas fa-wifi"></i> Offline';
+      statusEl.style.background = "#fef2f2";
+    } else if (pendingEvaluations.length > 0) {
+      statusEl.innerHTML = `<i class="fas fa-clock"></i> ${pendingEvaluations.length} pendiente(s)`;
+      statusEl.style.background = "#fff3e0";
+    } else {
+      statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Sincronizado';
+      statusEl.style.background = "#e0f2e9";
+    }
+  }
+
+  async function syncPending() {
+    if (!navigator.onLine) return;
+    if (pendingEvaluations.length === 0) return;
+    for (let i = 0; i < pendingEvaluations.length; i++) {
+      const evalData = pendingEvaluations[i];
+      const result = await callGAS('submitEvaluacion', evalData);
+      if (result.success) {
+        pendingEvaluations.splice(i, 1);
+        i--;
+        localStorage.setItem("pendingEvaluations", JSON.stringify(pendingEvaluations));
+        updateSyncStatus();
+      } else {
+        console.warn("Error al sincronizar evaluación", result.message);
+      }
+    }
+    cargarEvaluaciones(); // refrescar lista
+  }
+
+  window.addEventListener('online', () => { syncPending(); updateSyncStatus(); });
+  window.addEventListener('offline', updateSyncStatus);
 
   async function callGAS(action, data = {}) {
     data.action = action;
@@ -649,58 +492,87 @@
     }
   }
 
-  // ========== UI ==========
-  function showLogin() {
-    document.getElementById('login-view').classList.remove('hidden');
-    document.getElementById('main-view').classList.add('hidden');
-    document.getElementById('register-card').classList.add('hidden');
-    document.getElementById('user-info').classList.add('hidden');
-    currentUser = null;
-  }
-
-  function showMain() {
-    document.getElementById('login-view').classList.add('hidden');
-    document.getElementById('main-view').classList.remove('hidden');
-    document.getElementById('user-info').classList.remove('hidden');
-    document.getElementById('user-name-display').textContent = currentUser.name;
-    activarPestana('nueva');
-  }
-
-  function activarPestana(tabId) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
-
-    if (tabId === 'nueva') {
-      const evaluadorField = document.getElementById('evaluador');
-      if (evaluadorField && currentUser) evaluadorField.value = currentUser.name;
-      const fechaField = document.getElementById('fecha-evaluacion');
-      if (fechaField && !fechaField.value) fechaField.valueAsDate = new Date();
-    } else if (tabId === 'evaluaciones') {
-      cargarEvaluaciones();
-    } else if (tabId === 'dashboard') {
-      cargarDashboard();
+  // === LOGIN / REGISTER ===
+  async function login() {
+    const username = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const result = await callGAS('login', { username, password });
+    if (result.success) {
+      currentUser = result.user;
+      saveLocalUser();
+      await loadPreguntas();
+      await cargarEvaluaciones();
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('main-view').classList.remove('hidden');
+      document.getElementById('user-info').classList.remove('hidden');
+      activarPestana('nueva');
+    } else {
+      showLoginError(result.message);
     }
   }
 
-  // ========== PREGUNTAS ==========
+  async function register() {
+    const name = document.getElementById('reg-name').value.trim();
+    const username = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    if (!name || !username || !password) {
+      showRegisterError("Todos los campos son obligatorios");
+      return;
+    }
+    const result = await callGAS('register', { name, username, password });
+    if (result.success) {
+      alert("Registro exitoso. Ahora inicia sesión.");
+      document.getElementById('register-card').classList.add('hidden');
+    } else {
+      showRegisterError(result.message);
+    }
+  }
+
+  async function updateUserProfile() {
+    const newName = document.getElementById('profile-name').value.trim();
+    const newEmail = document.getElementById('profile-email').value.trim();
+    const newPassword = document.getElementById('profile-password').value;
+    if (!newName || !newEmail) {
+      showProfileMsg("Nombre y correo son obligatorios", "error");
+      return;
+    }
+    const updates = { name: newName, email: newEmail };
+    if (newPassword) updates.password = newPassword;
+    if (currentUser.photo) updates.photo = currentUser.photo;
+    const result = await callGAS('updateUser', { userId: currentUser.id, ...updates });
+    if (result.success) {
+      currentUser = result.user;
+      saveLocalUser();
+      showProfileMsg("Perfil actualizado correctamente", "success");
+      document.getElementById('profile-password').value = "";
+    } else {
+      showProfileMsg(result.message, "error");
+    }
+  }
+
+  function loadProfileForm() {
+    document.getElementById('profile-name').value = currentUser.name || "";
+    document.getElementById('profile-email').value = currentUser.username || "";
+    const photoEl = document.getElementById('profile-photo-img');
+    if (currentUser.photo) photoEl.src = currentUser.photo;
+    else photoEl.src = "logo_c4.png";
+  }
+
+  // === PREGUNTAS ===
   async function loadPreguntas() {
-    const cached = localStorage.getItem(PREGUNTAS_CACHE_KEY);
+    const cached = localStorage.getItem("gestion_operativa_preguntas");
     if (cached) {
       try {
         const data = JSON.parse(cached);
-        if (Date.now() - data.timestamp < PREGUNTAS_CACHE_TIME) {
-          preguntas = data.preguntas;
-          renderPreguntasForm();
-          return true;
-        }
+        preguntas = data.preguntas;
+        renderPreguntasForm();
+        return true;
       } catch(e) {}
     }
     const result = await callGAS('getPreguntas');
     if (result.success) {
       preguntas = result.preguntas;
-      localStorage.setItem(PREGUNTAS_CACHE_KEY, JSON.stringify({ preguntas, timestamp: Date.now() }));
+      localStorage.setItem("gestion_operativa_preguntas", JSON.stringify({ preguntas, timestamp: Date.now() }));
       renderPreguntasForm();
       return true;
     } else {
@@ -722,27 +594,18 @@
     for (const pilar in grouped) {
       html += `<div class="section-title">${pilar}</div>`;
       for (const elemento in grouped[pilar]) {
-        html += `<div class="sub-section">${elemento}</div>`;
-        html += `<div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
+        html += `<div class="sub-section">${elemento}</div><div class="evaluation-table-wrapper"><table class="evaluation-table"><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
         grouped[pilar][elemento].forEach(p => {
           const checkedSi = respuestasSeleccionadas[p.num] === 'Sí' ? 'checked' : '';
           const checkedNo = respuestasSeleccionadas[p.num] === 'No' ? 'checked' : '';
-          html += `<tr>
-                       <td>${p.num}</td>
-                       <td>${p.criterio}</td>
-                       <td><div class="radio-group">
-                          <label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label>
-                          <label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label>
-                        </div></td>
-                     </tr>`;
+          html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td><div class="radio-group"><label><input type="radio" name="q_${p.num}" value="Sí" ${checkedSi}> Sí</label><label><input type="radio" name="q_${p.num}" value="No" ${checkedNo}> No</label></div></td></tr>`;
         });
         html += `</tbody></table></div>`;
       }
     }
     container.innerHTML = html;
     preguntas.forEach(p => {
-      const radios = document.querySelectorAll(`input[name="q_${p.num}"]`);
-      radios.forEach(radio => {
+      document.querySelectorAll(`input[name="q_${p.num}"]`).forEach(radio => {
         radio.addEventListener('change', (e) => {
           if (e.target.checked) respuestasSeleccionadas[p.num] = e.target.value;
         });
@@ -756,60 +619,36 @@
     const evaluador = document.getElementById('evaluador').value;
     const representante = document.getElementById('representante').value.trim();
     const asistentes = document.getElementById('asistentes').value.trim();
-
     if (!empresa || !fecha || !representante) {
-      showEvalError("Completa los campos obligatorios: Empresa, Fecha, Representante");
+      showEvalError("Completa los campos obligatorios");
       return;
     }
-
-    const submitBtn = document.getElementById('submit-evaluation');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-
     const respuestas = preguntas.map(p => ({ num: p.num, respuesta: respuestasSeleccionadas[p.num] || 'No' }));
-    const result = await callGAS('submitEvaluacion', { empresa, fecha, evaluador, representante, asistentes, respuestas });
-
+    const evalData = { empresa, fecha, evaluador, representante, asistentes, respuestas };
+    if (!navigator.onLine) {
+      pendingEvaluations.push(evalData);
+      localStorage.setItem("pendingEvaluations", JSON.stringify(pendingEvaluations));
+      updateSyncStatus();
+      alert("Evaluación guardada localmente. Se sincronizará cuando recuperes internet.");
+      resetForm();
+      activarPestana('evaluaciones');
+      return;
+    }
+    const result = await callGAS('submitEvaluacion', evalData);
     if (result.success) {
-      const porcentaje = Math.round((result.total / preguntas.length) * 100);
-      alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length} (${porcentaje}%)`);
+      alert(`✅ Evaluación guardada. Puntaje: ${result.total} / ${preguntas.length}`);
       resetForm();
       activarPestana('evaluaciones');
     } else {
       showEvalError(result.message);
     }
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = 'Guardar evaluación';
   }
 
-  function showEvalError(msg) {
-    const errorDiv = document.getElementById('eval-error');
-    errorDiv.textContent = msg;
-    errorDiv.classList.remove('hidden');
-    setTimeout(() => errorDiv.classList.add('hidden'), 4000);
-  }
-
-  function resetForm() {
-    document.getElementById('empresa').value = '';
-    document.getElementById('fecha-evaluacion').value = '';
-    document.getElementById('representante').value = '';
-    document.getElementById('asistentes').value = '';
-    respuestasSeleccionadas = {};
-    renderPreguntasForm();
-  }
-
-  // ========== EVALUACIONES ==========
+  // === EVALUACIONES ===
   async function cargarEvaluaciones() {
     const container = document.getElementById('evaluaciones-list-container');
-    container.innerHTML = '<div class="loader"></div> Cargando evaluaciones...';
-    if (preguntas.length === 0) {
-      const checkInterval = setInterval(() => {
-        if (preguntas.length > 0) {
-          clearInterval(checkInterval);
-          cargarEvaluaciones();
-        }
-      }, 500);
-      return;
-    }
+    container.innerHTML = '<div class="loader"></div> Cargando...';
+    if (preguntas.length === 0) setTimeout(() => cargarEvaluaciones(), 500);
     const result = await callGAS('getEvaluaciones');
     if (result.success) {
       todasEvaluaciones = result.evaluaciones;
@@ -820,45 +659,31 @@
     }
   }
 
-  function poblarFiltrosEvaluaciones(evaluaciones) {
-    const empresas = [...new Set(evaluaciones.map(e => e.empresa).filter(e => e))];
-    const evaluadores = [...new Set(evaluaciones.map(e => e.evaluador).filter(e => e))];
-    const empresaSelect = document.getElementById('filter-empresa-evaluaciones');
-    const evaluadorSelect = document.getElementById('filter-evaluador-evaluaciones');
-    empresaSelect.innerHTML = '<option value="">Todas las empresas</option>';
-    empresas.forEach(emp => empresaSelect.innerHTML += `<option value="${escapeHtml(emp)}">${escapeHtml(emp)}</option>`);
-    evaluadorSelect.innerHTML = '<option value="">Todos los evaluadores</option>';
-    evaluadores.forEach(evalName => evaluadorSelect.innerHTML += `<option value="${escapeHtml(evalName)}">${escapeHtml(evalName)}</option>`);
-  }
-
   function aplicarFiltrosEvaluaciones() {
     const empresaFiltro = document.getElementById('filter-empresa-evaluaciones').value;
     const evaluadorFiltro = document.getElementById('filter-evaluador-evaluaciones').value;
     let filtradas = [...todasEvaluaciones];
     if (empresaFiltro) filtradas = filtradas.filter(e => e.empresa === empresaFiltro);
     if (evaluadorFiltro) filtradas = filtradas.filter(e => e.evaluador === evaluadorFiltro);
-    filtradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    filtradas.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
     renderEvaluacionesList(filtradas);
   }
 
   function renderEvaluacionesList(evaluaciones) {
     const container = document.getElementById('evaluaciones-list-container');
-    if (!evaluaciones.length) {
-      container.innerHTML = '<div class="alert">No hay evaluaciones con los filtros seleccionados.</div>';
-      return;
-    }
+    if (!evaluaciones.length) { container.innerHTML = '<div class="alert">No hay evaluaciones</div>'; return; }
     let html = `<table class="data-table"><thead><tr><th>Empresa</th><th>Fecha</th><th>Evaluador</th><th>Puntaje</th><th></th></tr></thead><tbody>`;
     evaluaciones.forEach(e => {
       const puntos = e.total_puntos || 0;
       const porcentaje = Math.round((puntos / preguntas.length) * 100);
       html += `<tr id="eval-row-${e.id}">
-                   <td>${escapeHtml(e.empresa || '')}</td>
-                   <td>${e.fecha_evaluacion || ''}</td>
-                   <td>${escapeHtml(e.evaluador || '')}</td>
-                   <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
-                   <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
-                 </tr>
-                <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando detalle...</div></td></tr>`;
+                  <td>${escapeHtml(e.empresa || '')}</td>
+                  <td>${e.fecha_evaluacion || ''}</td>
+                  <td>${escapeHtml(e.evaluador || '')}</td>
+                  <td>${puntos} / ${preguntas.length} (${porcentaje}%)</td>
+                  <td><button class="btn btn-outline btn-sm" onclick="toggleDetalle('${e.id}')">Ver detalle</button></td>
+                </tr>
+                <tr class="detail-row" id="detail-${e.id}"><td colspan="5"><div id="detail-content-${e.id}" class="loading-detail">Cargando...</div></td></tr>`;
     });
     html += `</tbody></table>`;
     container.innerHTML = html;
@@ -866,31 +691,23 @@
 
   window.toggleDetalle = async function(id) {
     const detailRow = document.getElementById(`detail-${id}`);
-    if (detailRow.classList.contains('show')) {
-      detailRow.classList.remove('show');
-      return;
-    }
+    if (detailRow.classList.contains('show')) { detailRow.classList.remove('show'); return; }
     detailRow.classList.add('show');
     const contentDiv = document.getElementById(`detail-content-${id}`);
-    if (!contentDiv.innerHTML.includes('Cargando detalle')) return;
+    if (!contentDiv.innerHTML.includes('Cargando')) return;
     const result = await callGAS('getEvaluacionDetalle', { id });
     if (result.success) {
       const evaluacion = result.evaluacion;
       const respuestas = result.respuestas;
       const respMap = {};
       respuestas.forEach(r => respMap[r.num] = r.respuesta);
+      let html = `<div><strong>Empresa:</strong> ${evaluacion.empresa}<br><strong>Fecha:</strong> ${evaluacion.fecha_evaluacion}<br><strong>Evaluador:</strong> ${evaluacion.evaluador}<br><strong>Representante:</strong> ${evaluacion.representante}<br><strong>Asistentes:</strong> ${evaluacion.asistentes}<br><strong>Total puntos:</strong> ${evaluacion.total_puntos} / ${preguntas.length}</div>`;
       const grouped = {};
       preguntas.forEach(p => {
         if (!grouped[p.pilar]) grouped[p.pilar] = {};
         if (!grouped[p.pilar][p.elemento]) grouped[p.pilar][p.elemento] = [];
         grouped[p.pilar][p.elemento].push(p);
       });
-      let html = `<div><strong>Empresa:</strong> ${evaluacion.empresa}<br>
-                  <strong>Fecha:</strong> ${evaluacion.fecha_evaluacion}<br>
-                  <strong>Evaluador:</strong> ${evaluacion.evaluador}<br>
-                  <strong>Representante:</strong> ${evaluacion.representante}<br>
-                  <strong>Asistentes:</strong> ${evaluacion.asistentes}<br>
-                  <strong>Total puntos:</strong> ${evaluacion.total_puntos} / ${preguntas.length}</div>`;
       for (const pilar in grouped) {
         html += `<div class="section-title">${pilar}</div>`;
         for (const elemento in grouped[pilar]) {
@@ -898,30 +715,23 @@
           grouped[pilar][elemento].forEach(p => {
             const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
             const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
-            html += `<tr>
-                         <td>${p.num}</td>
-                         <td>${p.criterio}</td>
-                        <td class="${respClass}">${resp}</td>
-                       </tr>`;
+            html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
           });
           html += `</tbody></table></div>`;
         }
       }
       contentDiv.innerHTML = html;
     } else {
-      contentDiv.innerHTML = `<div class="alert alert-error">Error al cargar detalle: ${result.message}</div>`;
+      contentDiv.innerHTML = `<div class="alert alert-error">Error al cargar detalle</div>`;
     }
   };
 
-  // ========== DASHBOARD ==========
+  // === DASHBOARD ===
   async function cargarDashboard() {
     const select = document.getElementById('dashboard-eval-select');
-    select.innerHTML = '<option value="">Cargando evaluaciones...</option>';
+    select.innerHTML = '<option>Cargando...</option>';
     const result = await callGAS('getEvaluaciones');
-    if (!result.success) {
-      select.innerHTML = '<option value="">Error al cargar evaluaciones</option>';
-      return;
-    }
+    if (!result.success) { select.innerHTML = '<option>Error</option>'; return; }
     todasEvaluaciones = result.evaluaciones;
     select.innerHTML = '<option value="">-- Selecciona una evaluación --</option>';
     todasEvaluaciones.forEach(e => {
@@ -931,125 +741,64 @@
       const masReciente = todasEvaluaciones.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
       select.value = masReciente.id;
       cargarDashboardParaEvaluacion(masReciente.id);
-    } else {
-      mostrarDashboardVacio();
-    }
-    select.onchange = () => { if (select.value) cargarDashboardParaEvaluacion(select.value); else mostrarDashboardVacio(); };
+    } else mostrarDashboardVacio();
+    select.onchange = () => select.value ? cargarDashboardParaEvaluacion(select.value) : mostrarDashboardVacio();
   }
 
   async function cargarDashboardParaEvaluacion(evalId) {
     const detalle = await callGAS('getEvaluacionDetalle', { id: evalId });
-    if (!detalle.success) { alert("Error al cargar detalle"); return; }
+    if (!detalle.success) return;
     const respuestas = detalle.respuestas;
     const respMap = {};
     respuestas.forEach(r => respMap[r.num] = r.respuesta);
-
-    const totalPreguntas = preguntas.length;
     const totalSi = respuestas.filter(r => r.respuesta === 'Sí').length;
-    const porcentajeGeneral = Math.round((totalSi / totalPreguntas) * 100);
-    document.getElementById('kpi-general').innerText = `${porcentajeGeneral}%`;
-
-    // Calcular KPIs por pilar usando los datos reales de preguntas
+    document.getElementById('kpi-general').innerText = `${Math.round((totalSi/preguntas.length)*100)}%`;
     const porPilar = {};
     preguntas.forEach(p => {
-      if (!porPilar[p.pilar]) porPilar[p.pilar] = { total: 0, cumplidas: 0 };
+      if (!porPilar[p.pilar]) porPilar[p.pilar] = { total:0, cumplidas:0 };
       porPilar[p.pilar].total++;
       if (respMap[p.num] === 'Sí') porPilar[p.pilar].cumplidas++;
     });
-    const porcEstabilidad = porPilar["Estabilidad"] ? Math.round((porPilar["Estabilidad"].cumplidas / porPilar["Estabilidad"].total) * 100) : 0;
-    const porcMejora = porPilar["Mejora de procesos"] ? Math.round((porPilar["Mejora de procesos"].cumplidas / porPilar["Mejora de procesos"].total) * 100) : 0;
-    document.getElementById('kpi-estabilidad').innerText = `${porcEstabilidad}%`;
-    document.getElementById('kpi-mejora').innerText = `${porcMejora}%`;
+    const estab = porPilar["Estabilidad"] ? Math.round((porPilar["Estabilidad"].cumplidas/porPilar["Estabilidad"].total)*100) : 0;
+    const mejora = porPilar["Mejora de procesos"] ? Math.round((porPilar["Mejora de procesos"].cumplidas/porPilar["Mejora de procesos"].total)*100) : 0;
+    document.getElementById('kpi-estabilidad').innerText = `${estab}%`;
+    document.getElementById('kpi-mejora').innerText = `${mejora}%`;
 
-    // Cálculos para gráficos por elemento
     const porElemento = {};
     preguntas.forEach(p => {
-      const respuesta = respMap[p.num] === 'Sí';
-      if (!porElemento[p.elemento]) porElemento[p.elemento] = { total: 0, cumplidas: 0 };
+      if (!porElemento[p.elemento]) porElemento[p.elemento] = { total:0, cumplidas:0 };
       porElemento[p.elemento].total++;
-      if (respuesta) porElemento[p.elemento].cumplidas++;
+      if (respMap[p.num] === 'Sí') porElemento[p.elemento].cumplidas++;
     });
     const elementos = Object.keys(porElemento);
-    const valoresRadar = elementos.map(e => Math.round((porElemento[e].cumplidas / porElemento[e].total) * 100));
+    const valoresRadar = elementos.map(e => Math.round((porElemento[e].cumplidas/porElemento[e].total)*100));
     if (radarChart) radarChart.destroy();
-    const ctxRadar = document.getElementById('radarChart').getContext('2d');
-    radarChart = new Chart(ctxRadar, {
-      type: 'radar',
-      data: { labels: elementos, datasets: [{ label: '% Cumplimiento', data: valoresRadar, backgroundColor: 'rgba(31, 58, 138, 0.2)', borderColor: '#1e3a8a', borderWidth: 2, pointBackgroundColor: '#f97316', pointBorderColor: '#fff' }] },
-      options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: (val) => val + '%' } } } }
+    radarChart = new Chart(document.getElementById('radarChart'), {
+      type: 'radar', data: { labels: elementos, datasets: [{ label: '% Cumplimiento', data: valoresRadar, backgroundColor: 'rgba(31,58,138,0.2)', borderColor: '#1e3a8a', pointBackgroundColor: '#f97316' }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100 } } }
     });
-
-    const elementosOrdenados = Object.keys(porElemento);
-    const siCounts = elementosOrdenados.map(e => porElemento[e].cumplidas);
-    const noCounts = elementosOrdenados.map(e => porElemento[e].total - porElemento[e].cumplidas);
+    const siCounts = elementos.map(e => porElemento[e].cumplidas);
+    const noCounts = elementos.map(e => porElemento[e].total - porElemento[e].cumplidas);
     if (horizontalBarChart) horizontalBarChart.destroy();
-    const ctxBar = document.getElementById('horizontalBarChart').getContext('2d');
-    horizontalBarChart = new Chart(ctxBar, {
-      type: 'bar',
-      data: {
-        labels: elementosOrdenados,
-        datasets: [
-          { label: 'Sí', data: siCounts, backgroundColor: '#1e3a8a', borderRadius: 4 },
-          { label: 'No', data: noCounts, backgroundColor: '#f97316', borderRadius: 4 }
-        ]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: { x: { stacked: true, title: { display: true, text: 'Cantidad de respuestas' } }, y: { stacked: true } },
-        plugins: { tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}` } }, legend: { position: 'top' } }
-      }
+    horizontalBarChart = new Chart(document.getElementById('horizontalBarChart'), {
+      type: 'bar', data: { labels: elementos, datasets: [{ label: 'Sí', data: siCounts, backgroundColor: '#1e3a8a' }, { label: 'No', data: noCounts, backgroundColor: '#f97316' }] },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
     });
-
     generarDetallePreguntas(respMap);
-    // Guardar datos actuales para PDF
-    window.currentEvalData = {
-      id: evalId,
-      empresa: detalle.evaluacion.empresa,
-      fecha: detalle.evaluacion.fecha_evaluacion,
-      evaluador: detalle.evaluacion.evaluador,
-      representante: detalle.evaluacion.representante,
-      asistentes: detalle.evaluacion.asistentes,
-      respMap: respMap,
-      totalSi: totalSi,
-      totalPreguntas: totalPreguntas,
-      porcGeneral: porcentajeGeneral,
-      porcEstabilidad: porcEstabilidad,
-      porcMejora: porcMejora,
-      radarChartData: valoresRadar,
-      barChartData: { labels: elementosOrdenados, si: siCounts, no: noCounts },
-      porPilar // include for reference
-    };
+    window.currentEvalData = { ...detalle.evaluacion, respMap, totalSi, totalPreguntas: preguntas.length, porcGeneral: Math.round((totalSi/preguntas.length)*100), porcEstabilidad: estab, porcMejora: mejora };
   }
 
   function generarDetallePreguntas(respMap) {
     const container = document.getElementById('question-detail-content');
     const grouped = {};
-    preguntas.forEach(p => {
-      if (!grouped[p.elemento]) grouped[p.elemento] = [];
-      grouped[p.elemento].push(p);
-    });
+    preguntas.forEach(p => { if (!grouped[p.elemento]) grouped[p.elemento] = []; grouped[p.elemento].push(p); });
     let html = '';
     for (const elemento in grouped) {
-      html += `<div class="element-group">
-                <div class="element-header" onclick="toggleElement(this)">
-                  <i class="fas fa-chevron-down"></i> ${elemento}
-                </div>
-                <div class="element-questions">
-                  <table>
-                    <thead>
-                      <tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr>
-                    </thead>
-                    <tbody>`;
+      html += `<div class="element-group"><div class="element-header" onclick="toggleElement(this)"><i class="fas fa-chevron-down"></i> ${elemento}</div><div class="element-questions"><table><thead><tr><th>No.</th><th>Criterio</th><th>Respuesta</th></tr></thead><tbody>`;
       grouped[elemento].forEach(p => {
         const resp = respMap[p.num] === 'Sí' ? 'Sí' : 'No';
         const respClass = resp === 'Sí' ? 'answer-yes' : 'answer-no';
-        html += `<tr>
-                     <td>${p.num}</td>
-                     <td>${p.criterio}</td>
-                    <td class="${respClass}">${resp}</td>
-                   </tr>`;
+        html += `<tr><td>${p.num}</td><td>${p.criterio}</td><td class="${respClass}">${resp}</td></tr>`;
       });
       html += `</tbody></table></div></div>`;
     }
@@ -1062,8 +811,6 @@
     content.classList.toggle('collapsed');
     icon.classList.toggle('fa-chevron-down');
     icon.classList.toggle('fa-chevron-right');
-    if (content.classList.contains('collapsed')) header.classList.add('collapsed');
-    else header.classList.remove('collapsed');
   };
 
   function mostrarDashboardVacio() {
@@ -1072,239 +819,190 @@
     document.getElementById('kpi-mejora').innerText = '0%';
     if (radarChart) radarChart.destroy();
     if (horizontalBarChart) horizontalBarChart.destroy();
-    const ctxRadar = document.getElementById('radarChart').getContext('2d');
-    radarChart = new Chart(ctxRadar, { type: 'radar', data: { labels: [], datasets: [] }, options: { responsive: true } });
-    const ctxBar = document.getElementById('horizontalBarChart').getContext('2d');
-    horizontalBarChart = new Chart(ctxBar, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true } });
-    document.getElementById('question-detail-content').innerHTML = 'Seleccione una evaluación para ver el detalle.';
+    radarChart = new Chart(document.getElementById('radarChart'), { type: 'radar', data: { labels: [], datasets: [] } });
+    horizontalBarChart = new Chart(document.getElementById('horizontalBarChart'), { type: 'bar', data: { labels: [], datasets: [] } });
+    document.getElementById('question-detail-content').innerHTML = 'Seleccione una evaluación';
     window.currentEvalData = null;
   }
 
-  // ========== GENERACIÓN DE PDF MEJORADA ==========
-  async function getLogoDataURL() {
-    const imgElement = document.getElementById('logo-img');
-    if (imgElement && imgElement.complete && imgElement.naturalHeight !== 0) {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = imgElement.naturalWidth;
-        canvas.height = imgElement.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(imgElement, 0, 0);
-        return canvas.toDataURL('image/png');
-      } catch(e) { console.warn("Error converting logo", e); }
-    }
-    return null;
-  }
-
+  // === PDF MEJORADO (Centrado y Rediseñado) ===
   async function generatePDF() {
-    if (!window.currentEvalData) {
-      alert("Primero seleccione una evaluación en el Dashboard.");
-      return;
-    }
+    if (!window.currentEvalData) { alert("Seleccione una evaluación"); return; }
     const data = window.currentEvalData;
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const margin = 10;
+    const margin = 15;
     let y = margin;
 
-    // Función para agregar nueva página si es necesario
-    function addNewPageIfNeeded(additionalHeight) {
-      if (y + additionalHeight > pdf.internal.pageSize.getHeight() - margin) {
-        pdf.addPage();
-        y = margin;
-      }
-    }
+    function addPageIfNeeded(h) { if (y + h > pdf.internal.pageSize.getHeight() - margin) { pdf.addPage(); y = margin; } }
 
-    // ----- Encabezado con logo -----
-    const logoDataURL = await getLogoDataURL();
-    if (logoDataURL) {
-      pdf.addImage(logoDataURL, 'PNG', margin, y, 25, 25);
-      y += 5;
-    } else {
-      pdf.setFontSize(10);
-      pdf.text("Logo Corporativo", margin, y+5);
-      y += 8;
-    }
-    pdf.setFontSize(16);
+    // Logo esquina superior izquierda
+    const logoData = await getLogoDataURL();
+    if (logoData) pdf.addImage(logoData, 'PNG', margin, y, 25, 25);
+    y += 8;
+
+    // Título centrado
+    pdf.setFontSize(18);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Reporte de Evaluación Operativa', pageWidth / 2, y, { align: 'center' });
+    pdf.text('Reporte de Evaluación Operativa', pageWidth/2, y, { align: 'center' });
     y += 12;
 
-    // ----- Tabla resumen de la empresa y resultados -----
+    // Tabla resumen centrada (autoTable con margen automático)
     const summaryData = [
       ['Empresa', data.empresa],
-      ['Fecha de evaluación', data.fecha],
+      ['Fecha evaluación', data.fecha],
       ['Evaluador', data.evaluador],
       ['Representante', data.representante],
       ['Asistentes', data.asistentes || 'Ninguno'],
       ['Resultado General', `${data.porcGeneral}%`],
-      ['Resultado Estabilidad', `${data.porcEstabilidad}%`],
-      ['Resultado Mejora de Procesos', `${data.porcMejora}%`]
+      ['Estabilidad', `${data.porcEstabilidad}%`],
+      ['Mejora de Procesos', `${data.porcMejora}%`]
     ];
-
     pdf.autoTable({
       startY: y,
       body: summaryData,
       theme: 'striped',
-      styles: { fontSize: 9, cellPadding: 3 },
-      headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
-      columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 100 } },
-      margin: { left: margin, right: margin }
+      styles: { fontSize: 9, cellPadding: 3, halign: 'center' },
+      headStyles: { fillColor: [31,58,138], textColor: 255, fontStyle: 'bold' },
+      margin: { left: margin, right: margin },
+      columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 100 } }
     });
-    y = pdf.lastAutoTable.finalY + 8;
+    y = pdf.lastAutoTable.finalY + 10;
 
-    // ----- Tarjetas KPI en una fila horizontal -----
-    addNewPageIfNeeded(35);
-    const kpiWidth = (pageWidth - 2*margin) / 3 - 2;
-    pdf.setFillColor(31, 58, 138); // azul primario
-    pdf.rect(margin, y, kpiWidth, 20, 'F');
+    // KPIs horizontales más pequeños
+    const kpiWidth = 50;
+    const kpiSpacing = 10;
+    const totalKpiWidth = 3*kpiWidth + 2*kpiSpacing;
+    const startX = (pageWidth - totalKpiWidth) / 2;
+    pdf.setFillColor(31,58,138);
+    pdf.rect(startX, y, kpiWidth, 18, 'F');
     pdf.setTextColor(255);
-    pdf.setFontSize(10);
-    pdf.text("Resultado General", margin+2, y+5);
-    pdf.setFontSize(16);
-    pdf.text(`${data.porcGeneral}%`, margin+2, y+14);
-    
-    pdf.setFillColor(31, 58, 138);
-    pdf.rect(margin + kpiWidth + 2, y, kpiWidth, 20, 'F');
-    pdf.text("Estabilidad", margin + kpiWidth + 4, y+5);
-    pdf.text(`${data.porcEstabilidad}%`, margin + kpiWidth + 4, y+14);
-    
-    pdf.setFillColor(31, 58, 138);
-    pdf.rect(margin + 2*(kpiWidth+2), y, kpiWidth, 20, 'F');
-    pdf.text("Mejora de Procesos", margin + 2*(kpiWidth+2)+2, y+5);
-    pdf.text(`${data.porcMejora}%`, margin + 2*(kpiWidth+2)+2, y+14);
-    y += 28;
-    
-    // ----- Gráficos radar y barras lado a lado -----
-    addNewPageIfNeeded(95);
+    pdf.setFontSize(9);
+    pdf.text("General", startX+2, y+6);
+    pdf.setFontSize(14);
+    pdf.text(`${data.porcGeneral}%`, startX+2, y+13);
+    pdf.setFillColor(31,58,138);
+    pdf.rect(startX + kpiWidth + kpiSpacing, y, kpiWidth, 18, 'F');
+    pdf.text("Estabilidad", startX + kpiWidth + kpiSpacing +2, y+6);
+    pdf.text(`${data.porcEstabilidad}%`, startX + kpiWidth + kpiSpacing +2, y+13);
+    pdf.setFillColor(31,58,138);
+    pdf.rect(startX + 2*(kpiWidth+kpiSpacing), y, kpiWidth, 18, 'F');
+    pdf.text("Mejora", startX + 2*(kpiWidth+kpiSpacing)+2, y+6);
+    pdf.text(`${data.porcMejora}%`, startX + 2*(kpiWidth+kpiSpacing)+2, y+13);
+    y += 24;
+
+    // Gráficos lado a lado centrados
     const radarCanvas = document.getElementById('radarChart');
     const barCanvas = document.getElementById('horizontalBarChart');
     if (radarCanvas && barCanvas) {
       const radarImg = radarCanvas.toDataURL('image/png');
       const barImg = barCanvas.toDataURL('image/png');
-      const imgWidth = 85;
-      const imgHeight = 85;
-      pdf.addImage(radarImg, 'PNG', margin, y, imgWidth, imgHeight);
-      pdf.addImage(barImg, 'PNG', pageWidth - margin - imgWidth, y, imgWidth, imgHeight);
+      const imgWidth = 80;
+      const imgHeight = 80;
+      const spacing = 10;
+      const totalWidth = 2*imgWidth + spacing;
+      const startXGraph = (pageWidth - totalWidth) / 2;
+      pdf.addImage(radarImg, 'PNG', startXGraph, y, imgWidth, imgHeight);
+      pdf.addImage(barImg, 'PNG', startXGraph + imgWidth + spacing, y, imgWidth, imgHeight);
       pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Cumplimiento por Elemento', margin + imgWidth/2, y + imgHeight + 3, { align: 'center' });
-      pdf.text('Cumplimiento por Elemento (Sí/No)', pageWidth - margin - imgWidth/2, y + imgHeight + 3, { align: 'center' });
+      pdf.text('Cumplimiento por Elemento', startXGraph + imgWidth/2, y+imgHeight+3, { align: 'center' });
+      pdf.text('Cumplimiento por Elemento (Sí/No)', startXGraph + imgWidth + spacing + imgWidth/2, y+imgHeight+3, { align: 'center' });
       y += imgHeight + 12;
     }
 
-    // ----- Detalle de preguntas agrupadas por elemento -----
+    // Detalle de preguntas centrado
     const preguntasPorElemento = {};
-    preguntas.forEach(p => {
-      if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = [];
-      preguntasPorElemento[p.elemento].push(p);
-    });
-
+    preguntas.forEach(p => { if (!preguntasPorElemento[p.elemento]) preguntasPorElemento[p.elemento] = []; preguntasPorElemento[p.elemento].push(p); });
     for (const elemento in preguntasPorElemento) {
-      addNewPageIfNeeded(20);
+      addPageIfNeeded(20);
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(11);
       pdf.text(elemento, margin, y);
       y += 6;
-      pdf.setFontSize(8);
       const tableData = preguntasPorElemento[elemento].map(p => [p.num, p.criterio, data.respMap[p.num] === 'Sí' ? 'Sí' : 'No']);
-      const tableHeaders = ['No.', 'Criterio', 'Respuesta'];
-      const estimatedHeight = (tableData.length + 1) * 5;
-      addNewPageIfNeeded(estimatedHeight + 5);
       pdf.autoTable({
         startY: y,
-        head: [tableHeaders],
+        head: [['No.', 'Criterio', 'Respuesta']],
         body: tableData,
         theme: 'striped',
-        styles: { fontSize: 8, cellPadding: 2, lineColor: [200,200,200], lineWidth: 0.1 },
-        headStyles: { fillColor: [31, 58, 138], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 8, cellPadding: 2, halign: 'center' },
+        headStyles: { fillColor: [31,58,138], textColor: 255 },
         columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 120 }, 2: { cellWidth: 25 } },
         margin: { left: margin, right: margin }
       });
       y = pdf.lastAutoTable.finalY + 3;
     }
 
-    // ----- Firmas al final -----
-    addNewPageIfNeeded(20);
+    // Firmas al final centradas
+    addPageIfNeeded(40);
+    const signWidth = 80;
+    const startSignX = (pageWidth - 2*signWidth - 20) / 2;
     pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text('_______________________________', margin, y);
-    pdf.text(data.evaluador, margin + 20, y + 5);
-    pdf.text('Firma del Evaluador', margin, y + 10);
-
-    pdf.text('_______________________________', pageWidth - margin - 60, y);
-    pdf.text(data.representante, pageWidth - margin - 50, y + 5);
-    pdf.text('Firma del Representante', pageWidth - margin - 60, y + 10);
-
-    const fechaFirma = new Date().toLocaleDateString('es-ES');
-    pdf.text(`Fecha de firma: ${fechaFirma}`, margin, y + 25);
-
-    pdf.save(`Evaluacion_Operativa_${data.empresa}_${data.fecha}.pdf`);
+    pdf.text('_______________________________', startSignX, y);
+    pdf.text(data.evaluador, startSignX + 20, y+5);
+    pdf.text('Firma del Evaluador', startSignX, y+10);
+    pdf.text('_______________________________', startSignX + signWidth + 20, y);
+    pdf.text(data.representante, startSignX + signWidth + 40, y+5);
+    pdf.text('Firma del Representante', startSignX + signWidth + 20, y+10);
+    pdf.text(`Fecha de firma: ${new Date().toLocaleDateString('es-ES')}`, margin, y+25);
+    pdf.save(`Evaluacion_${data.empresa}_${data.fecha}.pdf`);
   }
 
-  // ========== EVENTOS ==========
-  document.getElementById('login-btn').onclick = async () => {
-    const username = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const result = await callGAS('login', { username, password });
-    if (result.success) {
-      currentUser = result.user;
-      const ok = await loadPreguntas();
-      if (ok) showMain();
-    } else {
-      const errorDiv = document.getElementById('login-error');
-      errorDiv.textContent = result.message;
-      errorDiv.classList.remove('hidden');
-      setTimeout(() => errorDiv.classList.add('hidden'), 4000);
+  async function getLogoDataURL() {
+    const img = document.getElementById('logo-img');
+    if (img && img.complete && img.naturalHeight) {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      return canvas.toDataURL('image/png');
     }
-  };
-  document.getElementById('show-register').onclick = (e) => { e.preventDefault(); document.getElementById('register-card').classList.remove('hidden'); };
-  document.getElementById('show-login').onclick = (e) => { e.preventDefault(); document.getElementById('register-card').classList.add('hidden'); };
-  document.getElementById('register-btn').onclick = async () => {
-    const name = document.getElementById('reg-name').value.trim();
-    const username = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-password').value;
-    if (!name || !username || !password) {
-      document.getElementById('register-error').textContent = "Todos los campos son obligatorios";
-      document.getElementById('register-error').classList.remove('hidden');
-      return;
-    }
-    const result = await callGAS('register', { name, username, password });
-    if (result.success) {
-      alert("Registro exitoso. Ahora puedes iniciar sesión.");
-      document.getElementById('register-card').classList.add('hidden');
-    } else {
-      document.getElementById('register-error').textContent = result.message;
-      document.getElementById('register-error').classList.remove('hidden');
-    }
-  };
-  document.getElementById('logout-btn').onclick = () => showLogin();
-  document.getElementById('cancel-new').onclick = () => activarPestana('evaluaciones');
+    return null;
+  }
+
+  // === HELPER ===
+  function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])) || ''; }
+  function showEvalError(msg) { const d=document.getElementById('eval-error'); d.textContent=msg; d.classList.remove('hidden'); setTimeout(()=>d.classList.add('hidden'),4000); }
+  function showLoginError(msg) { const d=document.getElementById('login-error'); d.textContent=msg; d.classList.remove('hidden'); setTimeout(()=>d.classList.add('hidden'),4000); }
+  function showRegisterError(msg) { const d=document.getElementById('register-error'); d.textContent=msg; d.classList.remove('hidden'); setTimeout(()=>d.classList.add('hidden'),4000); }
+  function showProfileMsg(msg,type) { const d=document.getElementById('profile-msg'); d.textContent=msg; d.className=`alert alert-${type}`; d.classList.remove('hidden'); setTimeout(()=>d.classList.add('hidden'),4000); }
+  function resetForm() { document.getElementById('empresa').value=''; document.getElementById('fecha-evaluacion').value=''; document.getElementById('representante').value=''; document.getElementById('asistentes').value=''; respuestasSeleccionadas={}; renderPreguntasForm(); }
+  function activarPestana(tabId) {
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden'));
+    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+    if (tabId === 'nueva') { document.getElementById('evaluador').value=currentUser.name; document.getElementById('fecha-evaluacion').valueAsDate=new Date(); }
+    if (tabId === 'evaluaciones') cargarEvaluaciones();
+    if (tabId === 'dashboard') cargarDashboard();
+    if (tabId === 'cuenta') loadProfileForm();
+  }
+
+  // Eventos
+  document.getElementById('login-btn').onclick = login;
+  document.getElementById('show-register').onclick = e=>{ e.preventDefault(); document.getElementById('register-card').classList.remove('hidden'); };
+  document.getElementById('show-login').onclick = e=>{ e.preventDefault(); document.getElementById('register-card').classList.add('hidden'); };
+  document.getElementById('register-btn').onclick = register;
+  document.getElementById('logout-btn').onclick = ()=>{ localStorage.removeItem("currentUser"); location.reload(); };
+  document.getElementById('cancel-new').onclick = ()=>activarPestana('evaluaciones');
   document.getElementById('submit-evaluation').onclick = submitEvaluation;
-  document.getElementById('apply-filters-evaluaciones').onclick = () => aplicarFiltrosEvaluaciones();
-  document.getElementById('reset-filters-evaluaciones').onclick = () => {
-    document.getElementById('filter-empresa-evaluaciones').value = '';
-    document.getElementById('filter-evaluador-evaluaciones').value = '';
-    aplicarFiltrosEvaluaciones();
+  document.getElementById('apply-filters-evaluaciones').onclick = aplicarFiltrosEvaluaciones;
+  document.getElementById('reset-filters-evaluaciones').onclick = ()=>{ document.getElementById('filter-empresa-evaluaciones').value=''; document.getElementById('filter-evaluador-evaluaciones').value=''; aplicarFiltrosEvaluaciones(); };
+  document.getElementById('sync-now-btn').onclick = syncPending;
+  document.getElementById('print-pdf-btn').onclick = generatePDF;
+  document.getElementById('save-profile-btn').onclick = updateUserProfile;
+  document.getElementById('profile-photo-input').onchange = e => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = ev => { currentUser.photo = ev.target.result; saveLocalUser(); document.getElementById('profile-photo-img').src = ev.target.result; document.getElementById('user-avatar').src = ev.target.result; };
+      reader.readAsDataURL(e.target.files[0]);
+    }
   };
-  document.getElementById('print-pdf-btn').onclick = () => generatePDF();
+  document.getElementById('clear-photo-btn').onclick = () => { delete currentUser.photo; saveLocalUser(); document.getElementById('profile-photo-img').src = "logo_c4.png"; document.getElementById('user-avatar').src = "logo_c4.png"; };
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => activarPestana(btn.getAttribute('data-tab'))));
 
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => activarPestana(btn.getAttribute('data-tab')));
-  });
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
-  }
-
-  showLogin();
+  loadLocalData();
 </script>
 </body>
 </html>
